@@ -3,7 +3,7 @@
 This project implements a Python 3 driver for the MikroElectronica ADC 6 Click board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
-1. Read a register
+1. Read the ID register.
 2. Write to a register
 3. Configure ADC for read
 
@@ -46,4 +46,13 @@ connected so are not shown.
 1. The Pi2 click shield has two positions for the ADC.  Most connections 
 to the Raspberry Pi are shared but 3 are not.  Where there are two 
 entries for a mikroBus pin, the top one is position 1.
+
+## Development 
+
+I started out trying to use the Python package spidev but it is poorly
+documented and does not do what I expected it to do.  So I decided to
+switch over to pigpio instead as I know this works.
+
+
+
 

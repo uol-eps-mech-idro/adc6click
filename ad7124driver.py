@@ -30,8 +30,15 @@ class AD7124Driver:
     def read_register(self, register):
         """ The value of the given register is returned.
         """
-        to_send = [0x01, 0x02, 0x03]
+        if register < 0 and register > 0x38:
+            raise ValueError("ERROR: register must be in range 0 to 56 inclusive")
+        # Add range check of register. Exception if out of range. 
+        # 
+        # HACK Read ID reg.
+        #define AD7124_ID_REG        0x05
+        to_send = [0x05, 0, 0]
         result = self.spi.xfer(to_send)
+        print("read_register result", result)
         return result
 
     def write_register(self, register, data):
@@ -41,10 +48,10 @@ class AD7124Driver:
         result = False
         return result
 
-    def spi_open(self, position=1):
+    def spi_open(self, position=2):
         """ Opens the SPI device.
         position is the Pi2 click shield position number, 1 or 2.
-        Returns None if it fails.
+        Throws an exception if it fails.
         """
         print("spi_open")
         self.spi = None
@@ -75,3 +82,4 @@ class AD7124Driver:
         if self.spi:
             self.spi.close()
             self.spi = None
+        print("spi_close")
