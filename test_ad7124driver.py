@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
 """ Unit tests for the AD7124 driver. """
 
 import unittest
 
 from ad7124driver import AD7124Driver
+
 
 class TestAD7214Driver(unittest.TestCase):
 
