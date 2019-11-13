@@ -17,11 +17,11 @@ class AD7124Driver:
 
     def __init__(self):
         """ Initialises the AD7124 device. """
-        self.spi = self._spi_open()
+        self.spi_open()
 
     def __del__(self):
         """ Close the SPI device. """
-        self._spi_close()
+        self.spi_close()
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
@@ -29,11 +29,9 @@ class AD7124Driver:
 
     def read_register(self, register):
         """ The value of the given register is returned.
-        Return None if an error occurred.
         """
-        result = None
         to_send = [0x01, 0x02, 0x03]
-        spi.xfer(to_send)
+        result = self.spi.xfer(to_send)
         return result
 
     def write_register(self, register, data):
@@ -43,16 +41,23 @@ class AD7124Driver:
         result = False
         return result
 
-    def _spi_open(self):
+    def spi_open(self, position=1):
         """ Opens the SPI device.
-        Throws an exception if it fails.
+        position is the Pi2 click shield position number, 1 or 2.
+        Returns None if it fails.
         """
+        print("spi_open")
         self.spi = None
+        device = -1
+        bus = 0  # Always 0 on the Raspberry Pi
+        if position == 1:
+            device = 0  # CS0
+        elif position == 2: 
+            device = 1  # CS1
+        else:
+            raise ValueError('ERROR: position must be 1 or 2')
         try:
             self.spi = spidev.SpiDev()
-            bus = 0  # Always 0 on the Raspberry Pi
-            # device = 0  # CS0, position 1
-            device = 1  # CS1, position 2
             self.spi.open(bus, device)
             self.spi.max_speed_hz = 10000000  # FIXME
             self.spi.mode = 0b00  # FIXME
@@ -63,9 +68,9 @@ class AD7124Driver:
             if self.spi:
                 self.spi.close()
                 self.spi = None
-        return spi
+            raise OSError('ERROR: could not open SPI', bus, device)
 
-    def _spi_close(self):
+    def spi_close(self):
         """ Close the SPI device. """
         if self.spi:
             self.spi.close()
