@@ -23,11 +23,59 @@ class AD7124Driver:
     AD7124_SPI_MODE = 0b11  # Mode 3
 
     def __init__(self):
-        """ Initialises the AD7124 device. """
-        self._pi = None
-        self._spi_handle = None
+        """ Initialise the AD7124 device. """
+        self._pi = pigpio.pi()
+        self._spi = AD7124SPI()
 
     def init(self, position):
+        """ Initialises the AD7124..
+        position is the Pi2 click shield position number, 1 or 2.
+        Throws an exception if it fails.
+        """
+        self._spi.init(self._pi, position)
+
+    def term(self):
+        """ Terminates the AD7124. """
+        self._spi.term(self._pi)
+        self._pi.stop()
+
+    def reset(self):
+        """ Resets the AD7124 to power up conditions. """
+        pass
+
+    def read_register(self, register):
+        """ The value of the given register is returned.
+        """
+        print("read_register")
+        data = []
+        return data
+        
+        result = self.spi.xfer(to_send)
+        print("read_register result", result)
+        return result
+
+    def write_register(self, register, data):
+        """ The data is wrtten to the given register.
+        Return True if the value was successfully written.
+        """
+        result = False
+        return result
+
+
+class AD7124SPI:
+    """ Provides a wrapper that hides the SPI calls.
+    """
+    # Values for SPI communications.  All other values are default.
+    # Max SPI baud rate is 5MHz. 
+    # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
+    AD7124_SPI_BAUD_RATE = 32 * 1000
+    AD7124_SPI_MODE = 0b11  # Mode 3
+
+    def __init__(self):
+        """ Initialises the AD7124 device. """
+        self._pi = pigpio.pi()
+
+    def init(self, pi, position):
         """ Initialises the AD7124..
         position is the Pi2 click shield position number, 1 or 2.
         Throws an exception if it fails.
@@ -50,36 +98,29 @@ class AD7124Driver:
         else:
             raise ValueError('ERROR: position must be 1 or 2')
         # Open SPI device
-        self._pi = pigpio.pi()
-        print("init 1")
-        self._spi_handle = self._pi.spi_open(spi_bus, self.AD7124_SPI_BAUD_RATE, spi_flags)
+        self._spi_handle = pi.spi_open(spi_bus, self.AD7124_SPI_BAUD_RATE, spi_flags)
         print("init 2")
+        # Check correct device is present.
+        AD7124Id = self.read_id(pi)
+        if AD7124Id != 0x14 or AD7124Id != 0x16:
+            raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
-    def term(self):
+    def term(self, pi):
         """ Terminates the AD7124. """
         print("term")
-        self._pi.spi_close(self._spi_handle)
-        self._pi.stop()
+        self.pi.spi_close(self._spi_handle)
+        self.pi.stop()
 
-    def read_register(self, register):
-        """ The value of the given register is returned.
-        """
-        print("read_register")
-        if register < 0 and register > 0x38:
-            raise ValueError("ERROR: register must be in range 0 to 56 inclusive")
-        # Add range check of register. Exception if out of range. 
-        # 
-        # HACK Read ID reg.
-        #define AD7124_ID_REG        0x05
-        to_send = [0x05, 0]
-        (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
+    def read_id(self, pi):
+        """ The value of the ID register is returned. """
+        print("read_id")
+        AD7124_ID_REG = 0x05
+        to_send = [AD7124_ID_REG, 0]
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         if count < 0:
             data = []
+        print("read_id", count, data)
         return data
-        
-        result = self.spi.xfer(to_send)
-        print("read_register result", result)
-        return result
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
@@ -92,3 +133,4 @@ class AD7124Driver:
         result = False
         return result
 
+    
