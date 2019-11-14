@@ -1,49 +1,89 @@
 #!/usr/bin/env python3
 """ AD7124-8 driver using the Mikro ADC6Click board on the Raspberry Pi.
-Please install the following packages before first use.
-'sudo apt-get install python3-spidev python3-dev'
+Uses PiGPIO for SPI and GPIO access. http://abyz.me.uk/rpi/pigpio/
 
-Loosely based on C code from here:
-https://github.com/analogdevicesinc/no-OS/tree/master/drivers/adc/ad7124
+Please install the following packages before first use.
+TODO
+
+Before running this script, the pigpio daemon must be running.
+ sudo pigpiod
+
 """
 
-import spidev
+import pigpio
 
 class AD7124Driver:
     """ Provides a wrapper that hides the SPI calls and many of the
     messy parts of the AD7124 implementation.
     """
     # Values for SPI communications.  All other values are default.
-    # Max SPI frequency is 5MHz. 
-    # AD7124_SPI_MAX_MHZ = 5 * 1000 * 1000
-    AD7124_SPI_MAX_MHZ = 5 * 1000
+    # Max SPI baud rate is 5MHz. 
+    # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
+    AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b11  # Mode 3
 
     def __init__(self):
         """ Initialises the AD7124 device. """
-        self.spi_open()
+        self._pi = None
+        self._spi_handle = None
 
-    def __del__(self):
-        """ Close the SPI device. """
-        self.spi_close()
+    def init(self, position):
+        """ Initialises the AD7124..
+        position is the Pi2 click shield position number, 1 or 2.
+        Throws an exception if it fails.
+        """
+        print("init")
+        # Set to mode 3
+        spi_flags = 0
+        spi_flags |= self.AD7124_SPI_MODE
+        # Convert position to bus
+        spi_bus = 0
+        if position == 1:
+            spi_bus = 0  # CS0
+        elif position == 2: 
+            # Only supported on model 2 and later.
+            self.__hw_version = self._pi.get_hardware_revision()
+            if self.__hw_version >= 2:
+                spi_bus = 1  # CS1
+            else:
+                raise ValueError("position 2 not supported for this board")
+        else:
+            raise ValueError('ERROR: position must be 1 or 2')
+        # Open SPI device
+        self._pi = pigpio.pi()
+        print("init 1")
+        self._spi_handle = self._pi.spi_open(spi_bus, self.AD7124_SPI_BAUD_RATE, spi_flags)
+        print("init 2")
 
-    def reset(self):
-        """ Resets the AD7124 to power up conditions. """
-        pass
+    def term(self):
+        """ Terminates the AD7124. """
+        print("term")
+        self._pi.spi_close(self._spi_handle)
+        self._pi.stop()
 
     def read_register(self, register):
         """ The value of the given register is returned.
         """
+        print("read_register")
         if register < 0 and register > 0x38:
             raise ValueError("ERROR: register must be in range 0 to 56 inclusive")
         # Add range check of register. Exception if out of range. 
         # 
         # HACK Read ID reg.
         #define AD7124_ID_REG        0x05
-        to_send = [0x05, 0, 0]
+        to_send = [0x05, 0]
+        (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
+        if count < 0:
+            data = []
+        return data
+        
         result = self.spi.xfer(to_send)
         print("read_register result", result)
         return result
+
+    def reset(self):
+        """ Resets the AD7124 to power up conditions. """
+        pass
 
     def write_register(self, register, data):
         """ The data is wrtten to the given register.
@@ -52,37 +92,3 @@ class AD7124Driver:
         result = False
         return result
 
-    def spi_open(self, position=2):
-        """ Opens the SPI device.
-        position is the Pi2 click shield position number, 1 or 2.
-        Throws an exception if it fails.
-        """
-        print("spi_open")
-        self.spi = None
-        device = -1
-        bus = 0  # Always 0 on the Raspberry Pi
-        if position == 1:
-            device = 0  # CS0
-        elif position == 2: 
-            device = 1  # CS1
-        else:
-            raise ValueError('ERROR: position must be 1 or 2')
-        try:
-            self.spi = spidev.SpiDev()
-            self.spi.open(bus, device)
-            self.spi.max_speed_hz = self.AD7124_SPI_MAX_MHZ
-            self.spi.mode = self.AD7124_SPI_MODE
-        except Exception as e:
-            print(e)
-            GPIO.cleanup()
-            if self.spi:
-                self.spi.close()
-                self.spi = None
-            raise OSError('ERROR: could not open SPI', bus, device)
-
-    def spi_close(self):
-        """ Close the SPI device. """
-        if self.spi:
-            self.spi.close()
-            self.spi = None
-        print("spi_close")

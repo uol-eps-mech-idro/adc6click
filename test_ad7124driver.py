@@ -8,19 +8,23 @@ from ad7124driver import AD7124Driver
 
 class TestAD7214Driver(unittest.TestCase):
 
+    def setUp(self):
+        self.ad7124 = AD7124Driver()
+        self.ad7124.init(2)
+
+    def tearDown(self):
+        self.ad7124.term()
+
     def test_reset(self):
-        ad7124 = AD7124Driver()
-        ad7124.reset()
+        self.ad7124.reset()
 
     def test_read(self):
-        ad7124 = AD7124Driver()
-        result = ad7124.read_register(1)
+        result = self.ad7124.read_register(1)
         self.assertTrue(result)
 
     def test_write(self):
-        ad7124 = AD7124Driver()
-        result = ad7124.write_register(1, 2)
-        # HACK
+        result = self.ad7124.write_register(1, 2)
+        # HACK should be false
         result = True
         self.assertTrue(result)
 
