@@ -46,6 +46,8 @@ connected so are not shown.
 1. The Pi2 click shield has two positions for the ADC.  Most connections 
 to the Raspberry Pi are shared but 3 are not.  Where there are two 
 entries for a mikroBus pin, the top one is position 1.
+1. Max SPI speed is limited by the SCK high and low pulse times, 100ns 
+for each (datasheet t3 and t4 times), so 200ns per cycle = 5MHz.
 
 ## Development 
 

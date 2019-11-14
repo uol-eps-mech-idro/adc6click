@@ -9,11 +9,15 @@ https://github.com/analogdevicesinc/no-OS/tree/master/drivers/adc/ad7124
 
 import spidev
 
-
 class AD7124Driver:
     """ Provides a wrapper that hides the SPI calls and many of the
     messy parts of the AD7124 implementation.
     """
+    # Values for SPI communications.  All other values are default.
+    # Max SPI frequency is 5MHz. 
+    # AD7124_SPI_MAX_MHZ = 5 * 1000 * 1000
+    AD7124_SPI_MAX_MHZ = 5 * 1000
+    AD7124_SPI_MODE = 0b11  # Mode 3
 
     def __init__(self):
         """ Initialises the AD7124 device. """
@@ -66,9 +70,8 @@ class AD7124Driver:
         try:
             self.spi = spidev.SpiDev()
             self.spi.open(bus, device)
-            self.spi.max_speed_hz = 10000000  # FIXME
-            self.spi.mode = 0b00  # FIXME
-            self.spi.lsbfirst = False  # FIXME
+            self.spi.max_speed_hz = self.AD7124_SPI_MAX_MHZ
+            self.spi.mode = self.AD7124_SPI_MODE
         except Exception as e:
             print(e)
             GPIO.cleanup()
