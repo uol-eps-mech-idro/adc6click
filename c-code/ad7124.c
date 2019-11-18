@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "ad7124.h"
+#include "platform_drivers.h"
 
 /* Error codes */
 #define INVALID_VAL -1 /* Invalid argument */
@@ -64,75 +65,75 @@
  *
  * @param dev   - The handler of the instance of the driver.
  * @param p_reg - Pointer to the register structure holding info about the
- *               register to be read. The read value is stored inside the
- *               register structure.
+ *                register to be read. The read value is stored inside the
+ *                register structure.
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_no_check_read_register(struct ad7124_dev *dev,
-				      struct ad7124_st_reg* p_reg)
+                                      struct ad7124_st_reg* p_reg)
 {
-	int32_t ret = 0;
-	uint8_t buffer[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t i = 0;
-	uint8_t check8 = 0, add_status_length = 0;
-	uint8_t msg_buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    int32_t ret = 0;
+    uint8_t buffer[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t i = 0;
+    uint8_t check8 = 0, add_status_length = 0;
+    uint8_t msg_buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-	if(!dev || !p_reg)
-		return INVALID_VAL;
+    if(!dev || !p_reg)
+        return INVALID_VAL;
 
-	/* Build the Command word */
-	buffer[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_RD |
-		    AD7124_COMM_REG_RA(p_reg->addr);
+    /* Build the Command word */
+    buffer[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_RD |
+            AD7124_COMM_REG_RA(p_reg->addr);
 
-	/*
-	 * If this is an AD7124_DATA register read, and the DATA_STATUS bit is set
-	 * in ADC_CONTROL, need to read 4, not 3 bytes for DATA with STATUS
-	 */
-	if ((p_reg->addr == AD7124_DATA_REG) &&
-	    (dev->regs[AD7124_ADC_Control].value & AD7124_ADC_CTRL_REG_DATA_STATUS)) {
-		add_status_length = 1;
-	}
+    /*
+     * If this is an AD7124_DATA register read, and the DATA_STATUS bit is set
+     * in ADC_CONTROL, need to read 4, not 3 bytes for DATA with STATUS
+     */
+    if ((p_reg->addr == AD7124_DATA_REG) &&
+        (dev->regs[AD7124_ADC_Control].value & AD7124_ADC_CTRL_REG_DATA_STATUS)) {
+        add_status_length = 1;
+    }
 
-	/* Read data from the device */
-	ret = spi_write_and_read(dev->spi_desc,
-				 buffer,
-				 ((dev->use_crc != AD7124_DISABLE_CRC) ? p_reg->size + 1
-				  : p_reg->size) + 1 + add_status_length);
-	if(ret < 0)
-		return ret;
+    /* Read data from the device */
+    ret = spi_write_and_read(dev->spi_desc,
+                 buffer,
+                 ((dev->use_crc != AD7124_DISABLE_CRC) ? p_reg->size + 1
+                  : p_reg->size) + 1 + add_status_length);
+    if(ret < 0)
+        return ret;
 
-	/* Check the CRC */
-	if(dev->use_crc == AD7124_USE_CRC) {
-		msg_buf[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_RD |
-			     AD7124_COMM_REG_RA(p_reg->addr);
-		for(i = 1; i < p_reg->size + 2 + add_status_length; ++i) {
-			msg_buf[i] = buffer[i];
-		}
-		check8 = ad7124_compute_crc8(msg_buf, p_reg->size + 2 + add_status_length);
-	}
+    /* Check the CRC */
+    if(dev->use_crc == AD7124_USE_CRC) {
+        msg_buf[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_RD |
+                 AD7124_COMM_REG_RA(p_reg->addr);
+        for(i = 1; i < p_reg->size + 2 + add_status_length; ++i) {
+            msg_buf[i] = buffer[i];
+        }
+        check8 = ad7124_compute_crc8(msg_buf, p_reg->size + 2 + add_status_length);
+    }
 
-	if(check8 != 0) {
-		/* ReadRegister checksum failed. */
-		return COMM_ERR;
-	}
+    if(check8 != 0) {
+        /* ReadRegister checksum failed. */
+        return COMM_ERR;
+    }
 
-	/*
-	 * if reading Data with 4 bytes, need to copy the status byte to the STATUS
-	 * register struct value member
-	 */
-	if (add_status_length) {
-		dev->regs[AD7124_Status].value = buffer[p_reg->size + 1];
-	}
+    /*
+     * if reading Data with 4 bytes, need to copy the status byte to the STATUS
+     * register struct value member
+     */
+    if (add_status_length) {
+        dev->regs[AD7124_Status].value = buffer[p_reg->size + 1];
+    }
 
-	/* Build the result */
-	p_reg->value = 0;
-	for(i = 1; i < p_reg->size + 1; i++) {
-		p_reg->value <<= 8;
-		p_reg->value += buffer[i];
-	}
+    /* Build the result */
+    p_reg->value = 0;
+    for(i = 1; i < p_reg->size + 1; i++) {
+        p_reg->value <<= 8;
+        p_reg->value += buffer[i];
+    }
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -145,41 +146,41 @@ int32_t ad7124_no_check_read_register(struct ad7124_dev *dev,
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_no_check_write_register(struct ad7124_dev *dev,
-				       struct ad7124_st_reg reg)
+                                       struct ad7124_st_reg reg)
 {
-	int32_t ret = 0;
-	int32_t reg_value = 0;
-	uint8_t wr_buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-	uint8_t i = 0;
-	uint8_t crc8 = 0;
+    int32_t ret = 0;
+    int32_t reg_value = 0;
+    uint8_t wr_buf[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t i = 0;
+    uint8_t crc8 = 0;
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	/* Build the Command word */
-	wr_buf[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_WR |
-		    AD7124_COMM_REG_RA(reg.addr);
+    /* Build the Command word */
+    wr_buf[0] = AD7124_COMM_REG_WEN | AD7124_COMM_REG_WR |
+            AD7124_COMM_REG_RA(reg.addr);
 
-	/* Fill the write buffer */
-	reg_value = reg.value;
-	for(i = 0; i < reg.size; i++) {
-		wr_buf[reg.size - i] = reg_value & 0xFF;
-		reg_value >>= 8;
-	}
+    /* Fill the write buffer */
+    reg_value = reg.value;
+    for(i = 0; i < reg.size; i++) {
+        wr_buf[reg.size - i] = reg_value & 0xFF;
+        reg_value >>= 8;
+    }
 
-	/* Compute the CRC */
-	if(dev->use_crc != AD7124_DISABLE_CRC) {
-		crc8 = ad7124_compute_crc8(wr_buf, reg.size + 1);
-		wr_buf[reg.size + 1] = crc8;
-	}
+    /* Compute the CRC */
+    if(dev->use_crc != AD7124_DISABLE_CRC) {
+        crc8 = ad7124_compute_crc8(wr_buf, reg.size + 1);
+        wr_buf[reg.size + 1] = crc8;
+    }
 
-	/* Write data to the device */
-	ret = spi_write_and_read(dev->spi_desc,
-				 wr_buf,
-				 (dev->use_crc != AD7124_DISABLE_CRC) ? reg.size + 2
-				 : reg.size + 1);
+    /* Write data to the device */
+    ret = spi_write_and_read(dev->spi_desc,
+                 wr_buf,
+                 (dev->use_crc != AD7124_DISABLE_CRC) ? reg.size + 2
+                 : reg.size + 1);
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -189,26 +190,26 @@ int32_t ad7124_no_check_write_register(struct ad7124_dev *dev,
  *
  * @param dev   - The handler of the instance of the driver.
  * @param p_reg - Pointer to the register structure holding info about the
- *               register to be read. The read value is stored inside the
- *               register structure.
+ *                register to be read. The read value is stored inside the
+ *                register structure.
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_read_register(struct ad7124_dev *dev,
-			     struct ad7124_st_reg* p_reg)
+                             struct ad7124_st_reg* p_reg)
 {
-	int32_t ret;
+    int32_t ret;
 
-	if (p_reg->addr != AD7124_ERR_REG && dev->check_ready) {
-		ret = ad7124_wait_for_spi_ready(dev,
-						dev->spi_rdy_poll_cnt);
-		if (ret < 0)
-			return ret;
-	}
-	ret = ad7124_no_check_read_register(dev,
-					    p_reg);
+    if (p_reg->addr != AD7124_ERR_REG && dev->check_ready) {
+        ret = ad7124_wait_for_spi_ready(dev,
+                        dev->spi_rdy_poll_cnt);
+        if (ret < 0)
+            return ret;
+    }
+    ret = ad7124_no_check_read_register(dev,
+                        p_reg);
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -222,20 +223,20 @@ int32_t ad7124_read_register(struct ad7124_dev *dev,
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_write_register(struct ad7124_dev *dev,
-			      struct ad7124_st_reg p_reg)
+                              struct ad7124_st_reg p_reg)
 {
-	int32_t ret;
+    int32_t ret;
 
-	if (dev->check_ready) {
-		ret = ad7124_wait_for_spi_ready(dev,
-						dev->spi_rdy_poll_cnt);
-		if (ret < 0)
-			return ret;
-	}
-	ret = ad7124_no_check_write_register(dev,
-					     p_reg);
+    if (dev->check_ready) {
+        ret = ad7124_wait_for_spi_ready(dev,
+                        dev->spi_rdy_poll_cnt);
+        if (ret < 0)
+            return ret;
+    }
+    ret = ad7124_no_check_write_register(dev,
+                         p_reg);
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -247,26 +248,26 @@ int32_t ad7124_write_register(struct ad7124_dev *dev,
 *******************************************************************************/
 int32_t ad7124_reset(struct ad7124_dev *dev)
 {
-	int32_t ret = 0;
-	uint8_t wr_buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+    int32_t ret = 0;
+    uint8_t wr_buf[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	ret = spi_write_and_read(dev->spi_desc,
-				 wr_buf,
-				 8);
+    ret = spi_write_and_read(dev->spi_desc,
+                 wr_buf,
+                 8);
 
-	/* CRC is disabled after reset */
-	dev->use_crc = AD7124_DISABLE_CRC;
+    /* CRC is disabled after reset */
+    dev->use_crc = AD7124_DISABLE_CRC;
 
-	/* Read POR bit to clear */
-	ret = ad7124_wait_to_power_on(dev,
-				      dev->spi_rdy_poll_cnt);
+    /* Read POR bit to clear */
+    ret = ad7124_wait_to_power_on(dev,
+                      dev->spi_rdy_poll_cnt);
 
-	mdelay(AD7124_POST_RESET_DELAY);
+    mdelay(AD7124_POST_RESET_DELAY);
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -278,30 +279,29 @@ int32_t ad7124_reset(struct ad7124_dev *dev)
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
-int32_t ad7124_wait_for_spi_ready(struct ad7124_dev *dev,
-				  uint32_t timeout)
+int32_t ad7124_wait_for_spi_ready(struct ad7124_dev *dev, uint32_t timeout)
 {
-	struct ad7124_st_reg *regs;
-	int32_t ret;
-	int8_t ready = 0;
+    struct ad7124_st_reg *regs;
+    int32_t ret;
+    int8_t ready = 0;
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	while(!ready && --timeout) {
-		/* Read the value of the Error Register */
-		ret = ad7124_read_register(dev, &regs[AD7124_Error]);
-		if(ret < 0)
-			return ret;
+    while(!ready && --timeout) {
+        /* Read the value of the Error Register */
+        ret = ad7124_read_register(dev, &regs[AD7124_Error]);
+        if(ret < 0)
+            return ret;
 
-		/* Check the SPI IGNORE Error bit in the Error Register */
-		ready = (regs[AD7124_Error].value &
-			 AD7124_ERR_REG_SPI_IGNORE_ERR) == 0;
-	}
+        /* Check the SPI IGNORE Error bit in the Error Register */
+        ready = (regs[AD7124_Error].value &
+             AD7124_ERR_REG_SPI_IGNORE_ERR) == 0;
+    }
 
-	return timeout ? 0 : TIMEOUT;
+    return timeout ? 0 : TIMEOUT;
 }
 
 /***************************************************************************//**
@@ -313,30 +313,29 @@ int32_t ad7124_wait_for_spi_ready(struct ad7124_dev *dev,
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
-int32_t ad7124_wait_to_power_on(struct ad7124_dev *dev,
-				uint32_t timeout)
+int32_t ad7124_wait_to_power_on(struct ad7124_dev *dev, uint32_t timeout)
 {
-	struct ad7124_st_reg *regs;
-	int32_t ret;
-	int8_t powered_on = 0;
+    struct ad7124_st_reg *regs;
+    int32_t ret;
+    int8_t powered_on = 0;
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	while(!powered_on && timeout--) {
-		ret = ad7124_read_register(dev,
-					   &regs[AD7124_Status]);
-		if(ret < 0)
-			return ret;
+    while(!powered_on && timeout--) {
+        ret = ad7124_read_register(dev,
+                       &regs[AD7124_Status]);
+        if(ret < 0)
+            return ret;
 
-		/* Check the POR_FLAG bit in the Status Register */
-		powered_on = (regs[AD7124_Status].value &
-			      AD7124_STATUS_REG_POR_FLAG) == 0;
-	}
+        /* Check the POR_FLAG bit in the Status Register */
+        powered_on = (regs[AD7124_Status].value &
+                  AD7124_STATUS_REG_POR_FLAG) == 0;
+    }
 
-	return (timeout || powered_on) ? 0 : TIMEOUT;
+    return (timeout || powered_on) ? 0 : TIMEOUT;
 }
 
 /***************************************************************************//**
@@ -348,30 +347,29 @@ int32_t ad7124_wait_to_power_on(struct ad7124_dev *dev,
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
-int32_t ad7124_wait_for_conv_ready(struct ad7124_dev *dev,
-				   uint32_t timeout)
+int32_t ad7124_wait_for_conv_ready(struct ad7124_dev *dev, uint32_t timeout)
 {
-	struct ad7124_st_reg *regs;
-	int32_t ret;
-	int8_t ready = 0;
+    struct ad7124_st_reg *regs;
+    int32_t ret;
+    int8_t ready = 0;
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	while(!ready && --timeout) {
-		/* Read the value of the Status Register */
-		ret = ad7124_read_register(dev, &regs[AD7124_Status]);
-		if(ret < 0)
-			return ret;
+    while(!ready && --timeout) {
+        /* Read the value of the Status Register */
+        ret = ad7124_read_register(dev, &regs[AD7124_Status]);
+        if(ret < 0)
+            return ret;
 
-		/* Check the RDY bit in the Status Register */
-		ready = (regs[AD7124_Status].value &
-			 AD7124_STATUS_REG_RDY) == 0;
-	}
+        /* Check the RDY bit in the Status Register */
+        ready = (regs[AD7124_Status].value &
+             AD7124_STATUS_REG_RDY) == 0;
+    }
 
-	return timeout ? 0 : TIMEOUT;
+    return timeout ? 0 : TIMEOUT;
 }
 
 /***************************************************************************//**
@@ -382,24 +380,23 @@ int32_t ad7124_wait_for_conv_ready(struct ad7124_dev *dev,
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
-int32_t ad7124_read_data(struct ad7124_dev *dev,
-			 int32_t* p_data)
+int32_t ad7124_read_data(struct ad7124_dev *dev, int32_t* p_data)
 {
-	struct ad7124_st_reg *regs;
-	int32_t ret;
+    struct ad7124_st_reg *regs;
+    int32_t ret;
 
-	if(!dev)
-		return INVALID_VAL;
+    if(!dev)
+        return INVALID_VAL;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	/* Read the value of the Status Register */
-	ret = ad7124_read_register(dev, &regs[AD7124_Data]);
+    /* Read the value of the Status Register */
+    ret = ad7124_read_register(dev, &regs[AD7124_Data]);
 
-	/* Get the read result */
-	*p_data = regs[AD7124_Data].value;
+    /* Get the read result */
+    *p_data = regs[AD7124_Data].value;
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -412,24 +409,24 @@ int32_t ad7124_read_data(struct ad7124_dev *dev,
 *******************************************************************************/
 uint8_t ad7124_compute_crc8(uint8_t * p_buf, uint8_t buf_size)
 {
-	uint8_t i = 0;
-	uint8_t crc = 0;
+    uint8_t i = 0;
+    uint8_t crc = 0;
 
-	while(buf_size) {
-		for(i = 0x80; i != 0; i >>= 1) {
-			bool cmp1 = (crc & 0x80) != 0;
-			bool cmp2 = (*p_buf & i) != 0;
-			if(cmp1 != cmp2) { /* MSB of CRC register XOR input Bit from Data */
-				crc <<= 1;
-				crc ^= AD7124_CRC8_POLYNOMIAL_REPRESENTATION;
-			} else {
-				crc <<= 1;
-			}
-		}
-		p_buf++;
-		buf_size--;
-	}
-	return crc;
+    while(buf_size) {
+        for(i = 0x80; i != 0; i >>= 1) {
+            bool cmp1 = (crc & 0x80) != 0;
+            bool cmp2 = (*p_buf & i) != 0;
+            if(cmp1 != cmp2) { /* MSB of CRC register XOR input Bit from Data */
+                crc <<= 1;
+                crc ^= AD7124_CRC8_POLYNOMIAL_REPRESENTATION;
+            } else {
+                crc <<= 1;
+            }
+        }
+        p_buf++;
+        buf_size--;
+    }
+    return crc;
 }
 
 /***************************************************************************//**
@@ -441,19 +438,19 @@ uint8_t ad7124_compute_crc8(uint8_t * p_buf, uint8_t buf_size)
 *******************************************************************************/
 void ad7124_update_crcsetting(struct ad7124_dev *dev)
 {
-	struct ad7124_st_reg *regs;
+    struct ad7124_st_reg *regs;
 
-	if(!dev)
-		return;
+    if(!dev)
+        return;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	/* Get CRC State. */
-	if (regs[AD7124_Error_En].value & AD7124_ERREN_REG_SPI_CRC_ERR_EN) {
-		dev->use_crc = AD7124_USE_CRC;
-	} else {
-		dev->use_crc = AD7124_DISABLE_CRC;
-	}
+    /* Get CRC State. */
+    if (regs[AD7124_Error_En].value & AD7124_ERREN_REG_SPI_CRC_ERR_EN) {
+        dev->use_crc = AD7124_USE_CRC;
+    } else {
+        dev->use_crc = AD7124_DISABLE_CRC;
+    }
 }
 
 /***************************************************************************//**
@@ -465,18 +462,18 @@ void ad7124_update_crcsetting(struct ad7124_dev *dev)
 *******************************************************************************/
 void ad7124_update_dev_spi_settings(struct ad7124_dev *dev)
 {
-	struct ad7124_st_reg *regs;
+    struct ad7124_st_reg *regs;
 
-	if(!dev)
-		return;
+    if(!dev)
+        return;
 
-	regs = dev->regs;
+    regs = dev->regs;
 
-	if (regs[AD7124_Error_En].value & AD7124_ERREN_REG_SPI_IGNORE_ERR_EN) {
-		dev->check_ready = 1;
-	} else {
-		dev->check_ready = 0;
-	}
+    if (regs[AD7124_Error_En].value & AD7124_ERREN_REG_SPI_IGNORE_ERR_EN) {
+        dev->check_ready = 1;
+    } else {
+        dev->check_ready = 0;
+    }
 }
 
 /***************************************************************************//**
@@ -484,56 +481,56 @@ void ad7124_update_dev_spi_settings(struct ad7124_dev *dev)
  *
  * @param device     - The device structure.
  * @param init_param - The structure that contains the device initial
- * 		       parameters.
+ *                     parameters.
  *
  * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_setup(struct ad7124_dev **device,
-		     struct ad7124_init_param init_param)
+                     struct ad7124_init_param init_param)
 {
-	int32_t ret;
-	enum ad7124_registers reg_nr;
-	struct ad7124_dev *dev;
+    int32_t ret;
+    enum ad7124_registers reg_nr;
+    struct ad7124_dev *dev;
 
-	dev = (struct ad7124_dev *)malloc(sizeof(*dev));
-	if (!dev)
-		return INVALID_VAL;
+    dev = (struct ad7124_dev *)malloc(sizeof(*dev));
+    if (!dev)
+        return INVALID_VAL;
 
-	dev->regs = init_param.regs;
-	dev->spi_rdy_poll_cnt = init_param.spi_rdy_poll_cnt;
+    dev->regs = init_param.regs;
+    dev->spi_rdy_poll_cnt = init_param.spi_rdy_poll_cnt;
 
-	/* Initialize the SPI communication. */
-	ret = spi_init(&dev->spi_desc, &init_param.spi_init);
-	if (ret < 0)
-		return ret;
+    /* Initialize the SPI communication. */
+    ret = spi_init(&dev->spi_desc, &init_param.spi_init);
+    if (ret < 0)
+        return ret;
 
-	/*  Reset the device interface.*/
-	ret = ad7124_reset(dev);
-	if (ret < 0)
-		return ret;
+    /*  Reset the device interface.*/
+    ret = ad7124_reset(dev);
+    if (ret < 0)
+        return ret;
 
-	/* Update the device structure with power-on/reset settings */
-	dev->check_ready = 1;
+    /* Update the device structure with power-on/reset settings */
+    dev->check_ready = 1;
 
-	/* Initialize registers AD7124_ADC_Control through AD7124_Filter_7. */
-	for(reg_nr = AD7124_Status; (reg_nr < AD7124_Offset_0) && !(ret < 0);
-	    reg_nr++) {
-		if (dev->regs[reg_nr].rw == AD7124_RW) {
-			ret = ad7124_write_register(dev, dev->regs[reg_nr]);
-			if (ret < 0)
-				break;
-		}
+    /* Initialize registers AD7124_ADC_Control through AD7124_Filter_7. */
+    for(reg_nr = AD7124_Status; (reg_nr < AD7124_Offset_0) && !(ret < 0);
+        reg_nr++) {
+        if (dev->regs[reg_nr].rw == AD7124_RW) {
+            ret = ad7124_write_register(dev, dev->regs[reg_nr]);
+            if (ret < 0)
+                break;
+        }
 
-		/* Get CRC State and device SPI interface settings */
-		if (reg_nr == AD7124_Error_En) {
-			ad7124_update_crcsetting(dev);
-			ad7124_update_dev_spi_settings(dev);
-		}
-	}
+        /* Get CRC State and device SPI interface settings */
+        if (reg_nr == AD7124_Error_En) {
+            ad7124_update_crcsetting(dev);
+            ad7124_update_dev_spi_settings(dev);
+        }
+    }
 
-	*device = dev;
+    *device = dev;
 
-	return ret;
+    return ret;
 }
 
 /***************************************************************************//**
@@ -541,15 +538,17 @@ int32_t ad7124_setup(struct ad7124_dev **device,
  *
  * @param dev - The device structure.
  *
- * @return SUCCESS in case of success, negative error code otherwise.
+ * @return Returns 0 for success or negative error code.
 *******************************************************************************/
 int32_t ad7124_remove(struct ad7124_dev *dev)
 {
-	int32_t ret;
+    int32_t ret = INVALID_VAL;
 
-	ret = spi_remove(dev->spi_desc);
+    if (dev)
+    {
+        ret = spi_remove(dev->spi_desc);
+        free(dev);
+    }
 
-	free(dev);
-
-	return ret;
+    return ret;
 }

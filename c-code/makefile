@@ -5,17 +5,17 @@ default: all
 CC=gcc
 CXX=g++
 RM=rm -f
-CPPFLAGS=-g $(shell root-config --cflags)
-LDFLAGS=-g $(shell root-config --ldflags)
-LDLIBS=$(shell root-config --libs)
+CPPFLAGS=-g
+LDFLAGS=-g
+LDLIBS=
 
-SRCS=ad7124.c ad7124_regs.c
+SRCS=ad7124.c ad7124_regs.c ad7124_test.c platform_drivers.c
 OBJS=$(subst .cc,.o,$(SRCS))
 
 all: ad7124
 
 ad7124: $(OBJS)
-	$(CXX) $(LDFLAGS) -o ad7124 $(OBJS) $(LDLIBS)
+	$(CC) $(LDFLAGS) -o ad7124 $(OBJS) $(LDLIBS)
 
 depend: .depend
 

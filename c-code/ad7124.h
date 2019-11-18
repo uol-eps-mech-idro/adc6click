@@ -45,15 +45,14 @@
 /***************************** Include Files **********************************/
 /******************************************************************************/
 #include <stdint.h>
-#include "spi.h"
-#include "delay.h"
+#include "platform_drivers.h"
 
 /******************************************************************************/
 /******************* Register map and register definitions ********************/
 /******************************************************************************/
 
-#define	AD7124_RW 1   /* Read and Write */
-#define	AD7124_R  2   /* Read only */
+#define AD7124_RW 1   /* Read and Write */
+#define AD7124_R  2   /* Read only */
 #define AD7124_W  3   /* Write only */
 
 /* AD7124 Register Map */
@@ -263,72 +262,72 @@
 
 /*! Device register info */
 struct ad7124_st_reg {
-	int32_t addr;
-	int32_t value;
-	int32_t size;
-	int32_t rw;
+    int32_t addr;
+    int32_t value;
+    int32_t size;
+    int32_t rw;
 };
 
 /*! AD7124 registers list*/
 enum ad7124_registers {
-	AD7124_Status = 0x00,
-	AD7124_ADC_Control,
-	AD7124_Data,
-	AD7124_IOCon1,
-	AD7124_IOCon2,
-	AD7124_ID,
-	AD7124_Error,
-	AD7124_Error_En,
-	AD7124_Mclk_Count,
-	AD7124_Channel_0,
-	AD7124_Channel_1,
-	AD7124_Channel_2,
-	AD7124_Channel_3,
-	AD7124_Channel_4,
-	AD7124_Channel_5,
-	AD7124_Channel_6,
-	AD7124_Channel_7,
-	AD7124_Channel_8,
-	AD7124_Channel_9,
-	AD7124_Channel_10,
-	AD7124_Channel_11,
-	AD7124_Channel_12,
-	AD7124_Channel_13,
-	AD7124_Channel_14,
-	AD7124_Channel_15,
-	AD7124_Config_0,
-	AD7124_Config_1,
-	AD7124_Config_2,
-	AD7124_Config_3,
-	AD7124_Config_4,
-	AD7124_Config_5,
-	AD7124_Config_6,
-	AD7124_Config_7,
-	AD7124_Filter_0,
-	AD7124_Filter_1,
-	AD7124_Filter_2,
-	AD7124_Filter_3,
-	AD7124_Filter_4,
-	AD7124_Filter_5,
-	AD7124_Filter_6,
-	AD7124_Filter_7,
-	AD7124_Offset_0,
-	AD7124_Offset_1,
-	AD7124_Offset_2,
-	AD7124_Offset_3,
-	AD7124_Offset_4,
-	AD7124_Offset_5,
-	AD7124_Offset_6,
-	AD7124_Offset_7,
-	AD7124_Gain_0,
-	AD7124_Gain_1,
-	AD7124_Gain_2,
-	AD7124_Gain_3,
-	AD7124_Gain_4,
-	AD7124_Gain_5,
-	AD7124_Gain_6,
-	AD7124_Gain_7,
-	AD7124_REG_NO
+    AD7124_Status = 0x00,
+    AD7124_ADC_Control,
+    AD7124_Data,
+    AD7124_IOCon1,
+    AD7124_IOCon2,
+    AD7124_ID,
+    AD7124_Error,
+    AD7124_Error_En,
+    AD7124_Mclk_Count,
+    AD7124_Channel_0,
+    AD7124_Channel_1,
+    AD7124_Channel_2,
+    AD7124_Channel_3,
+    AD7124_Channel_4,
+    AD7124_Channel_5,
+    AD7124_Channel_6,
+    AD7124_Channel_7,
+    AD7124_Channel_8,
+    AD7124_Channel_9,
+    AD7124_Channel_10,
+    AD7124_Channel_11,
+    AD7124_Channel_12,
+    AD7124_Channel_13,
+    AD7124_Channel_14,
+    AD7124_Channel_15,
+    AD7124_Config_0,
+    AD7124_Config_1,
+    AD7124_Config_2,
+    AD7124_Config_3,
+    AD7124_Config_4,
+    AD7124_Config_5,
+    AD7124_Config_6,
+    AD7124_Config_7,
+    AD7124_Filter_0,
+    AD7124_Filter_1,
+    AD7124_Filter_2,
+    AD7124_Filter_3,
+    AD7124_Filter_4,
+    AD7124_Filter_5,
+    AD7124_Filter_6,
+    AD7124_Filter_7,
+    AD7124_Offset_0,
+    AD7124_Offset_1,
+    AD7124_Offset_2,
+    AD7124_Offset_3,
+    AD7124_Offset_4,
+    AD7124_Offset_5,
+    AD7124_Offset_6,
+    AD7124_Offset_7,
+    AD7124_Gain_0,
+    AD7124_Gain_1,
+    AD7124_Gain_2,
+    AD7124_Gain_3,
+    AD7124_Gain_4,
+    AD7124_Gain_5,
+    AD7124_Gain_6,
+    AD7124_Gain_7,
+    AD7124_REG_NO
 };
 
 /*
@@ -344,21 +343,21 @@ enum ad7124_registers {
  *                    before a timeout error will be issued.
  */
 struct ad7124_dev {
-	/* SPI */
-	spi_desc		*spi_desc;
-	/* Device Settings */
-	struct ad7124_st_reg	*regs;
-	int16_t use_crc;
-	int16_t check_ready;
-	int16_t spi_rdy_poll_cnt;
+    /* SPI */
+    spi_desc        *spi_desc;
+    /* Device Settings */
+    struct ad7124_st_reg    *regs;
+    int16_t use_crc;
+    int16_t check_ready;
+    int16_t spi_rdy_poll_cnt;
 };
 
 struct ad7124_init_param {
-	/* SPI */
-	spi_init_param		spi_init;
-	/* Device Settings */
-	struct ad7124_st_reg	*regs;
-	int16_t spi_rdy_poll_cnt;
+    /* SPI */
+    spi_init_param      spi_init;
+    /* Device Settings */
+    struct ad7124_st_reg    *regs;
+    int16_t spi_rdy_poll_cnt;
 };
 
 /******************************************************************************/
@@ -374,42 +373,42 @@ struct ad7124_init_param {
 
 /*! Reads the value of the specified register. */
 int32_t ad7124_read_register(struct ad7124_dev *dev,
-			     struct ad7124_st_reg* p_reg);
+                 struct ad7124_st_reg* p_reg);
 
 /*! Writes the value of the specified register. */
 int32_t ad7124_write_register(struct ad7124_dev *dev,
-			      struct ad7124_st_reg reg);
+                  struct ad7124_st_reg reg);
 
 /*! Reads the value of the specified register without a device state check. */
 int32_t ad7124_no_check_read_register(struct ad7124_dev *dev,
-				      struct ad7124_st_reg* p_reg);
+                      struct ad7124_st_reg* p_reg);
 
 /*! Writes the value of the specified register without a device state check. */
 int32_t ad7124_no_check_write_register(struct ad7124_dev *dev,
-				       struct ad7124_st_reg reg);
+                       struct ad7124_st_reg reg);
 
 /*! Resets the device. */
 int32_t ad7124_reset(struct ad7124_dev *dev);
 
 /*! Waits until the device can accept read and write user actions. */
 int32_t ad7124_wait_for_spi_ready(struct ad7124_dev *dev,
-				  uint32_t timeout);
+                  uint32_t timeout);
 
 /*! Waits until the device finishes the power-on reset operation. */
 int32_t ad7124_wait_to_power_on(struct ad7124_dev *dev,
-				uint32_t timeout);
+                uint32_t timeout);
 
 /*! Waits until a new conversion result is available. */
 int32_t ad7124_wait_for_conv_ready(struct ad7124_dev *dev,
-				   uint32_t timeout);
+                   uint32_t timeout);
 
 /*! Reads the conversion result from the device. */
 int32_t ad7124_read_data(struct ad7124_dev *dev,
-			 int32_t* p_data);
+             int32_t* p_data);
 
 /*! Computes the CRC checksum for a data buffer. */
 uint8_t ad7124_compute_crc8(uint8_t* p_buf,
-			    uint8_t buf_size);
+                uint8_t buf_size);
 
 /*! Updates the CRC settings. */
 void ad7124_update_crcsetting(struct ad7124_dev *dev);
@@ -419,7 +418,8 @@ void ad7124_update_dev_spi_settings(struct ad7124_dev *dev);
 
 /*! Initializes the AD7124. */
 int32_t ad7124_setup(struct ad7124_dev **device,
-		     struct ad7124_init_param init_param);
+             struct ad7124_init_param init_param);
+
 /*! Free the resources allocated by AD7124_Setup(). */
 int32_t ad7124_remove(struct ad7124_dev *dev);
 

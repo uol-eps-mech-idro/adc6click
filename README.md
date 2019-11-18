@@ -55,6 +55,20 @@ I started out trying to use the Python package spidev but it is poorly
 documented and does not do what I expected it to do.  So I decided to
 switch over to pigpio instead as I know this works.
 
+## Analog Devices Source Code
 
+https://wiki.analog.com/resources/tools-software/uc-drivers/ad7124
 
+Source code ferom here:
+https://github.com/analogdevicesinc/no-OS/tree/master/drivers/adc/ad7124
+
+### SPI header file
+
+This needs to be implemented.
+
+There are three functions which are called by the AD7124 driver:
+
+SPI_Init() – initializes the communication peripheral.
+SPI_Write() – writes data to the device.
+SPI_Read() – reads data from the device.
 
