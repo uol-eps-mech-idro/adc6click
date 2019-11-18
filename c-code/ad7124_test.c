@@ -7,16 +7,18 @@
  
 void main(void)
 {
-    struct ad7124_dev *device = NULL;         /* A new driver instance */
-    struct ad7124_init_param init_param;     /* Initialisation params */
-    enum ad7124_registers regNr;             /* Variable to iterate through registers */
-    uint32_t timeout = 1000;                 /* Number of tries before a function times out */
-    int32_t ret = 0;                         /* Return value */
-    int32_t sample;                          /* Stores raw value read from the ADC */
-    struct ad7124_st_reg *reg;
+    struct ad7124_dev *device = NULL;    /* A new driver instance */
+    struct ad7124_init_param init_param; /* Initialisation params */
+    enum ad7124_registers regNr;         /* Variable to iterate through registers */
+    uint32_t timeout = 1000;             /* Number of tries before a function times out */
+    int32_t ret = 0;                     /* Return value */
+    int32_t sample;                      /* Stores raw value read from the ADC */
+    struct ad7124_st_reg *reg;           /* Pointer to the register structure */
  
     /* Initialize AD7124 device. */
-    ret = ad7124_setup(&device, init_param);
+    init_param.spi_init = NULL;
+    init_param.spi_rdy_poll_cnt = 10;
+    ret = ad7124_setup(&device, &init_param);
     if (ret < 0)
     {
         /* AD7124 initialization failed, check the value of ret! */

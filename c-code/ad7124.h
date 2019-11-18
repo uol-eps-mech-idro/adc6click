@@ -346,7 +346,6 @@ struct ad7124_dev {
     /* SPI */
     spi_desc        *spi_desc;
     /* Device Settings */
-    struct ad7124_st_reg    *regs;
     int16_t use_crc;
     int16_t check_ready;
     int16_t spi_rdy_poll_cnt;
@@ -356,7 +355,6 @@ struct ad7124_init_param {
     /* SPI */
     spi_init_param      spi_init;
     /* Device Settings */
-    struct ad7124_st_reg    *regs;
     int16_t spi_rdy_poll_cnt;
 };
 
@@ -377,7 +375,7 @@ int32_t ad7124_read_register(struct ad7124_dev *dev,
 
 /*! Writes the value of the specified register. */
 int32_t ad7124_write_register(struct ad7124_dev *dev,
-                  struct ad7124_st_reg reg);
+                  const struct ad7124_st_reg *reg);
 
 /*! Reads the value of the specified register without a device state check. */
 int32_t ad7124_no_check_read_register(struct ad7124_dev *dev,
@@ -385,7 +383,7 @@ int32_t ad7124_no_check_read_register(struct ad7124_dev *dev,
 
 /*! Writes the value of the specified register without a device state check. */
 int32_t ad7124_no_check_write_register(struct ad7124_dev *dev,
-                       struct ad7124_st_reg reg);
+                       const struct ad7124_st_reg *reg);
 
 /*! Resets the device. */
 int32_t ad7124_reset(struct ad7124_dev *dev);
@@ -418,7 +416,7 @@ void ad7124_update_dev_spi_settings(struct ad7124_dev *dev);
 
 /*! Initializes the AD7124. */
 int32_t ad7124_setup(struct ad7124_dev **device,
-             struct ad7124_init_param init_param);
+                     const struct ad7124_init_param *init_param);
 
 /*! Free the resources allocated by AD7124_Setup(). */
 int32_t ad7124_remove(struct ad7124_dev *dev);
