@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 
 #include "ad7124.h"      /* AD7124 definitions */
@@ -14,10 +15,19 @@ void main(void)
     int32_t ret = 0;                     /* Return value */
     int32_t sample;                      /* Stores raw value read from the ADC */
     struct ad7124_st_reg *reg;           /* Pointer to the register structure */
- 
-    /* Initialize AD7124 device. */
-    init_param.spi_init = NULL;
+
+    /* Set SPI params */
+    memset(&init_param, 0, sizeof(init_param));
+    // Commented out values are not used in the platform_driver.c file.
+    // init_param.spi_init.id = 
+    // init_param.spi_init.chip_select = ;
+    init_param.spi_init.max_speed_hz = 5000000;  // 5MHz
+    init_param.spi_init.mode = SPI_MODE_3;
+    init_param.spi_init.pathname = "/dev/spidev0.1";  // Use CS0
+    // init_param.spi_init.type = 
     init_param.spi_rdy_poll_cnt = 10;
+
+    /* Initialize AD7124 device. */
     ret = ad7124_setup(&device, &init_param);
     if (ret < 0)
     {

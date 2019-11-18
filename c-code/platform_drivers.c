@@ -190,6 +190,7 @@ int32_t spi_init(spi_desc **desc, const spi_init_param *param)
     if (!descriptor)
         return FAILURE;
 
+    // One the RPi, pathname is spidev0.0 or spidev0.1.
     descriptor->fd = open(param->pathname, O_RDWR);
     if (descriptor->fd < 0) {
         printf("%s: Can't open device\n\r", __func__);
@@ -197,8 +198,7 @@ int32_t spi_init(spi_desc **desc, const spi_init_param *param)
         return FAILURE;
     }
 
-    ret = ioctl(descriptor->fd, SPI_IOC_WR_MODE,
-            &param->mode);
+    ret = ioctl(descriptor->fd, SPI_IOC_WR_MODE, &param->mode);
     if (ret == -1) {
         printf("%s: Can't set mode\n\r", __func__);
         close(descriptor->fd);
@@ -206,8 +206,7 @@ int32_t spi_init(spi_desc **desc, const spi_init_param *param)
         return FAILURE;
     }
 
-    ret = ioctl(descriptor->fd, SPI_IOC_WR_MAX_SPEED_HZ,
-            &param->max_speed_hz);
+    ret = ioctl(descriptor->fd, SPI_IOC_WR_MAX_SPEED_HZ, &param->max_speed_hz);
     if (ret == -1) {
         printf("%s: Can't set speed\n\r", __func__);
         close(descriptor->fd);
