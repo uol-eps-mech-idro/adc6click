@@ -104,7 +104,7 @@ class AD7124SPI:
         the result.
         """
         to_send = []
-        command = self._build_command_word(0x02, True)
+        command = self._build_command_word(register, True)
         to_send.append(command)
         # TODO bytes to append from table?
         for _ in range(0, count):
@@ -141,4 +141,27 @@ class AD7124SPI:
         result = False
         return result
 
-    
+    def read_status(self, pi):
+        """ Returns a tuple containing the values:
+        (ready {bool}, error{bool}, power on reset{bool}, active channel)
+        """
+        # RDY is inverted.
+        ready = True
+        error = False
+        power_on_reset = False
+        active_channel = 0
+        to_send = self._read_reg_command(0x02, 3)
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
+        print("read_status", count, data)
+        if count == 2:
+            value = data[1]
+            if value & 0x80:
+                ready = False
+            if value & 0x40:
+                ready = True
+            if error & 0x10:
+                power_on_reset = True
+            active_channel &= 0x0f
+        return (ready, error, power_on_reset, active_channel)
+
+

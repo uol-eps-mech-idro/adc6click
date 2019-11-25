@@ -30,6 +30,16 @@ class TestAD7214Driver(unittest.TestCase):
         result = True
         self.assertTrue(result)
 
+    def test_status(self):
+        result = self.ad7124.read_status()
+        ready = result[0]
+        error = result[1]
+        power_on_reset = result[2]
+        active_channel = result[3]
+        self.assertTrue(ready)
+        self.assertFalse(error)
+        self.assertFalse(power_on_reset)
+        self.assertEqual(active_channel, 0)
 
 if __name__ == '__main__':
     unittest.main()
