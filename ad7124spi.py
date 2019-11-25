@@ -4,6 +4,7 @@
 
 import time
 import pigpio
+import bitstruct
 
 class AD7124SPI:
     """ A wrapper that hides the SPI calls.
@@ -13,6 +14,7 @@ class AD7124SPI:
     # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
     AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b00  # Mode 3
+    AD7124_REG_CONTROL = 0x01
     AD7124_REG_ID = 0x05
 
     def __init__(self):
@@ -54,7 +56,9 @@ class AD7124SPI:
     def read_id(self, pi):
         """ The value of the ID register is returned. """
         print("read_id")
-        to_send = [self.AD7124_REG_ID, 0]
+        to_send = bytearray()
+        to_send.append(self.AD7124_REG_ID)
+        to_send.append(0)
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         if count < 0:
             data = []
@@ -65,19 +69,32 @@ class AD7124SPI:
         """ Does a single shot conversion. 
         The value of the ??? register is returned. 
         """
-        conversion_command = b'\x01\x00\x04'
-        print("read_reg_1 comand", conversion_command)
-        (count, data) = pi.spi_xfer(self._spi_handle, conversion_command)
+        # Set single shot coversion mode.
+        self._write_reg_control(pi, mode=0x01)
         # Wait for conversion - fastest is @ 19200Hz or 52uS.
         # 100uS is fine.
         time.sleep(0.0001)
         # Command 0x42 plus three bytes for the result.
-        read_command = b'\x42\x00\x00\x00'
+        read_command = bytearray([0x42, 0, 0, 0])
         (count, data) = pi.spi_xfer(self._spi_handle, read_command)
         if count < 0:
             data = []
         print("read_reg_1", count, data)
         return data
+
+    def _write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+        """ Writes to the ADC control register.
+        """
+        command = [self.AD7124_REG_CONTROL, 0]
+        value = bitstruct.compile('u2u4u2')
+        value_bytes = value.pack(power_mode, mode, clock_select)
+        print("_write_reg_control bytes", value_bytes)
+        value_ints = bitstruct.unpack('u8', value_bytes)
+        print("_write_reg_control ints", value_ints)
+        command.append(value_ints[0])
+        print("_write_reg_control command", command)
+        (count, data) = pi.spi_xfer(self._spi_handle, command)
+        print("_write_reg_control result", count, data)
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """

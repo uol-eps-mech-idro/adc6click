@@ -4,6 +4,7 @@ Uses PiGPIO for SPI and GPIO access. http://abyz.me.uk/rpi/pigpio/
 
 Please install the following packages before first use.
 TODO
+pip3 install bitstruct
 
 Before running this script, the pigpio daemon must be running.
  sudo pigpiod
