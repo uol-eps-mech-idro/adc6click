@@ -51,24 +51,26 @@ for each (datasheet t3 and t4 times), so 200ns per cycle = 5MHz.
 
 ## Development 
 
-I started out trying to use the Python package spidev but it is poorly
-documented and does not do what I expected it to do.  So I decided to
-switch over to pigpio instead as I know this works.
+I started out trying to use the spidev Python package but it is poorly
+documented and does not do what I expected it to do.  So I tried the Analog 
+Devices C driver example.
 
-## Analog Devices Source Code
+### Analog Devices Source Code
 
 https://wiki.analog.com/resources/tools-software/uc-drivers/ad7124
 
-Source code ferom here:
+Source code from here:
 https://github.com/analogdevicesinc/no-OS/tree/master/drivers/adc/ad7124
 
-### SPI header file
+Added this code to the repo.  Needed SPI and GPIO so found the 
+platform_drivers.c/h files and wrote a test program to drive it.  It worked
+apart from the resulting app has SCLK and CE0 swapped.  Tried to figoue out how 
+to fix this but it started getting deeply into Linux device trees, so I gave up 
+and tried pigpio instead.
 
-This needs to be implemented.
-
-There are three functions which are called by the AD7124 driver:
-
-SPI_Init() – initializes the communication peripheral.
-SPI_Write() – writes data to the device.
-SPI_Read() – reads data from the device.
+## Pigpio
+Copied my test code over from the nRF905Py driver and hacked it to verify the 
+mode of operation.  Initially, tried to read the Id register as this was
+recommended in the docs.  No response.  Tried to read an ADC register and it 
+came back with numbers. 
 
