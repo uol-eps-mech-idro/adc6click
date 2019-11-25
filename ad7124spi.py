@@ -4,7 +4,7 @@
 
 import time
 import pigpio
-import bitstruct
+
 
 class AD7124SPI:
     """ A wrapper that hides the SPI calls.
@@ -100,6 +100,18 @@ class AD7124SPI:
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         #print("_write_reg_control result", count, data)
 
+    def _read_reg_command(self, register, count):
+        """ Creates a read register command with the count number of bytes for
+        the result.
+        """
+        to_send = []
+        command = self._build_command_word(0x02, True)
+        to_send.append(command)
+        # TODO bytes to append from table?
+        for _ in range(0, count):
+            to_send.append(0)
+        return to_send;
+
     def read_reg_1(self, pi):
         """ Does a single shot conversion. 
         The value of the ??? register is returned. 
@@ -109,9 +121,9 @@ class AD7124SPI:
         # Wait for conversion - fastest is @ 19200Hz or 52uS.
         # 100uS is fine.
         time.sleep(0.0001)
-        # Command 0x42 plus three bytes for the result.
-        read_command = [0x42, 0, 0, 0]
-        (count, data) = pi.spi_xfer(self._spi_handle, read_command)
+        # Read register 2
+        to_send = self._read_reg_command(0x02, 3)
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         if count < 0:
             data = []
         print("read_reg_1", count, data)
