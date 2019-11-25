@@ -32,20 +32,20 @@ class AD7124SPI:
         spi_flags = 0
         # Set to mode 3
         spi_flags |= self.AD7124_SPI_MODE
-        print("init: flags", spi_flags)
+        # print("init: flags", spi_flags)
         # Set SPI chip select
         spi_channel = 0
         if position == 1 or position == 2: 
             spi_channel = position - 1
         else:
             raise ValueError('ERROR: position must be 1 or 2')
-        print("init: channel", spi_channel)
+        # print("init: channel", spi_channel)
         # Open SPI device
         self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
-        print("init 2")
+        # print("init 2")
         # Check correct device is present.
-        AD7124Id = self.read_id(pi)
-        print("init id", AD7124Id)
+        AD7124Id = self._read_id(pi)
+        # print("init id", AD7124Id)
         if AD7124Id != 0x14 and AD7124Id != 0x16:
             raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
@@ -54,7 +54,7 @@ class AD7124SPI:
         print("term")
         pi.spi_close(self._spi_handle)
 
-    def read_id(self, pi):
+    def _read_id(self, pi):
         """ The value of the ID register is returned. """
         result = 0
         # print("read_id")
@@ -81,6 +81,25 @@ class AD7124SPI:
         command += (register & 0x2f)
         return command
 
+    def _write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+        """ Writes to the ADC control register.
+        Default value of the register is 0x00 so defaults of 0 work.
+        """
+        to_send = []
+        command = self._build_command_word(self.AD7124_REG_CONTROL)
+        to_send.append(command)
+        # Add 1 byte padding
+        to_send.append(0)
+        # Pack the given parameters
+        value = clock_select
+        value |= ((mode & 0x0f) << 2)
+        value |= ((power_mode & 0x03) << 6)
+        to_send.append(value)
+        print("_write_reg_control to_send", to_send)
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
+        #print("_write_reg_control result", count, data)
+
     def read_reg_1(self, pi):
         """ Does a single shot conversion. 
         The value of the ??? register is returned. 
@@ -98,21 +117,6 @@ class AD7124SPI:
         print("read_reg_1", count, data)
         
         return data
-
-    def _write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
-        """ Writes to the ADC control register.
-        Default value of the register is 0x00 so parameter defaults of 0 work.
-        """
-        command = [self.AD7124_REG_CONTROL, 0]
-        value = bitstruct.compile('u2u4u2')
-        value_bytes = value.pack(power_mode, mode, clock_select)
-        #print("_write_reg_control bytes", value_bytes)
-        value_ints = bitstruct.unpack('u8', value_bytes)
-        #print("_write_reg_control ints", value_ints)
-        command.append(value_ints[0])
-        print("_write_reg_control command", command)
-        (count, data) = pi.spi_xfer(self._spi_handle, command)
-        #print("_write_reg_control result", count, data)
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
