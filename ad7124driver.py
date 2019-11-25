@@ -37,7 +37,7 @@ class AD7124Driver:
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
-        pass
+        self._spi.reset(self._pi)
 
     def read_register(self, register):
         """ The value of the given register is returned.

@@ -97,7 +97,6 @@ class AD7124SPI:
         to_send.append(value)
         print("_write_reg_control to_send", to_send)
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
-        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         #print("_write_reg_control result", count, data)
 
     def _read_reg_command(self, register, count):
@@ -127,12 +126,13 @@ class AD7124SPI:
         if count < 0:
             data = []
         print("read_reg_1", count, data)
-        
         return data
 
-    def reset(self):
+    def reset(self, pi):
         """ Resets the AD7124 to power up conditions. """
-        pass
+        to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
+        print("reset command", to_send)
+        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
 
     def write_register(self, register, data):
         """ The data is wrtten to the given register.
