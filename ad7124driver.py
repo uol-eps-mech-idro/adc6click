@@ -62,31 +62,32 @@ class AD7124Driver:
 
     def _configure_setups(self):
         # Configure setup 0
-        setup0 = self._setups[0]
-        setup0.set_defaults()
-        setup0.set_bipolar_input(True)
-        setup0.write()
+        setup = self._setups[0]
+        setup.set_defaults()
+        setup.set_bipolar(True)
+        setup.write()
         # Configure setup 1
-        setup1 = self._setups[1]
-        setup1.set_defaults()
-        setup1.set_bipolar_input(False)
-        setup1.write()
+        setup = self._setups[1]
+        setup.set_defaults()
+        setup.set_bipolar(False)
+        setup.write()
 
     def _configure_channels(self):
         # Configure channel 0
-        channel0 = self._channels[0]
-        channel0.set_defaults()
-        channel0.set_input_pin(0)
-        channel1.use_setup(self._setup[0])
-        channel0.write()
+        channel = self._channels[0]
+        channel.set_defaults()
+        channel.set_input_pin(0)
+        channel.use_setup(self._setups[0])
+        channel.write()
         # Configure channel 1
-        channel1 = self._channels[1]
-        channel1.set_defaults()
-        channel1.set_input_pin(1)
-        channel1.use_setup(self._setup[1])
-        channel1.write()
+        channel = self._channels[1]
+        channel.set_defaults()
+        channel.set_input_pin(1)
+        channel.use_setup(self._setups[1])
+        channel.write()
 
     def read_channels(self):
+        # FIXME
         """ Read all active channels and output the values to stdout.
         Can only be called after configure has been called.
         """
