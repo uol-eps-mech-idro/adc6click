@@ -15,6 +15,8 @@ import pigpio
 from ad7124spi import AD7124SPI
 from ad7124channel import AD7124Channel
 from ad7124setup import AD7124Setup
+from ad7124registers import AD7124RegNames
+
 
 class AD7124Driver:
     """ Provides a wrapper that hides the SPI calls and many of the
@@ -35,10 +37,10 @@ class AD7124Driver:
         """
         self._spi.init(self._pi, position)
         for i in range(0, 16):
-            channel = AD7124Channel()
+            channel = AD7124Channel(i)
             self._channels.append(channel)
         for i in range(0, 8):
-            setup = AD7124Setup()
+            setup = AD7124Setup(i)
             self._setups.append(setup)
 
     def term(self):
@@ -56,7 +58,7 @@ class AD7124Driver:
         Must be called after init.
         """
         self._configure_setups()
-        self._configure channels()
+        self._configure_channels()
 
     def _configure_setups(self):
         # Configure setup 0
@@ -108,13 +110,22 @@ class AD7124Driver:
 
 # Not final
 
-    def read_register(self, register):
+    def read_register(self, register_name):
         """ The value of the given register is returned.
         """
         print("read_register")
-        result = self._spi.read_reg_1(self._pi)
+        result = self._spi.read_register(self._pi, register_name)
         print("read_register result", result)
         return result
+
+    def read_voltage(self, channel_num):
+        """ The Voltage of the given channel is returned.
+        """
+        channel = self._channels[channel_num]
+        channel.register = AD7124RegNames.DATA_REG
+        voltage = channel.read(self._pi, self._spi)
+        print("read_voltage: ", voltage)
+        return voltage
 
     def write_register(self, register, data):
         """ The data is wrtten to the given register.

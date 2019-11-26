@@ -6,7 +6,7 @@ import time
 import pigpio
 
 from ad7124registers import AD7124Registers
-
+from ad7124registers import AD7124RegNames
 
 class AD7124SPI:
     """ A wrapper that hides the SPI calls.
@@ -16,8 +16,6 @@ class AD7124SPI:
     # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
     AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b00  # Mode 3
-    AD7124_REG_CONTROL = 0x01
-    AD7124_REG_ID = 0x05
     
 
     def __init__(self):
@@ -63,7 +61,7 @@ class AD7124SPI:
         # print("read_id")
         to_send = []
         # Build command word
-        command = self._build_command_word(self.AD7124_REG_ID, True)
+        command = self._build_command(AD7124RegNames.ID_REG, True)
         to_send.append(command)
         to_send.append(0)
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
@@ -73,7 +71,7 @@ class AD7124SPI:
             result = data[1]
         return result
 
-    def _build_command(self, register, read = False):
+    def _build_command(self, register_enum, read = False):
         """ Builds a command byte. """
         command = 0
         # First bit (bit 7) must be a 0
@@ -81,33 +79,28 @@ class AD7124SPI:
         if read:
             command += (1 << 6)
         # Remaining 6 bits are register address.
-        command += (register & 0x2f)
+        command += (register_enum.value & 0x2f)
         return command
 
-    def _write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
-        """ Writes to the ADC control register.
-        Default value of the register is 0x00 so defaults of 0 work.
+    def write_register(self, pi, register_enum, data):
+        """ Write the given data to the given register.
         """
-        to_send = []
-        command = self._build_command(self.AD7124_REG_CONTROL)
-        to_send.append(command)
-        # The control register is 16 bits, MSB first.
-        # MSB - for now all 0s.
-        msb = 0b00000000
-        to_send.append(msb)
-        # Pack the given parameters
-        lsb = clock_select
-        lsb |= ((mode & 0x0f) << 2)
-        lsb |= ((power_mode & 0x03) << 6)
-        to_send.append(lsb)
-        print("_write_reg_control to_send", to_send)
-        self.write_register(self.AD7124_REG_CONTROL, to_send)
+        if len(data) == self._registers.size(register_enum):
+            to_send = []
+            register_address = register_enum.value
+            command = self._build_command(register_address)
+            to_send.append(command)
+            to_send += data
+            print("_write_register: to_send", to_send)
+            pi.spi_xfer(self._spi_handle, to_send)
+        else:
+            raise ValueError("Length of data does not match the size of the register.")
 
-    def read_register(self, register_name):
+    def read_register(self, pi, register_enum):
         """ Returns the value read from the register as a list of int values. 
         """
-        address = self._registers.address(register_name)
-        size = self._registers.size(register_name)
+        address = register_enum
+        size = self._registers.size(register_enum)
         to_send = []
         command = self._build_command(address, True)
         to_send.append(command)
@@ -137,8 +130,7 @@ class AD7124SPI:
         error = False
         power_on_reset = False
         active_channel = 0
-        to_send = self._read_reg_command(0x02, 3)
-        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
+        data = self.read_register(AD7124RegNames.STATUS_REG)
         print("read_status", count, data)
         if count == 2:
             value = data[1]
@@ -151,33 +143,20 @@ class AD7124SPI:
             active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
 
-    def read_reg_1(self, pi):
-        """ Does a single shot conversion. 
-        The value of the ??? register is returned. 
+    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+        """ Writes to the ADC control register.
+        Default value of the register is 0x00 so defaults of 0 work.
         """
-        # Set single shot coversion mode.
-        self._write_reg_control(pi, mode=0x01)
-        # Wait for conversion - fastest is @ 19200Hz or 52uS.
-        # 100uS is fine.
-        time.sleep(0.0001)
-        # Read register 2
-        to_send = self._read_reg_command(0x02, 3)
-        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
-        if count < 0:
-            data = []
-        print("read_reg_1", count, data)
-        return data
+        to_send = []
+        # The control register is 16 bits, MSB first.
+        # MSB - for now all 0s.
+        msb = 0b00000000
+        to_send.append(msb)
+        # Pack the given parameters
+        lsb = clock_select
+        lsb |= ((mode & 0x0f) << 2)
+        lsb |= ((power_mode & 0x03) << 6)
+        to_send.append(lsb)
+        print("_write_reg_control to_send", to_send)
+        self.write_register(AD7124RegNames.ADC_CTRL_REG, to_send)
 
-    def write_register(self, register_name, data):
-        """ Write the given data to the given register.
-        """
-        if len(data) == self._registers.size(register_name):
-            to_send = []
-            register_address = self._registers.address(register_name)
-            command = self._build_command(register_address)
-            to_send.append(command)
-            to_send += data
-            print("_write_reg_control to_send", to_send)
-            pi.spi_xfer(self._spi_handle, to_send)
-        else:
-            raise ValueError("Length of data does not match the size of the register.")

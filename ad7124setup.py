@@ -12,8 +12,7 @@ class AD7124Setup:
     functions to set values that can be changed.
     """
 
-    def __init__(self, spi, number):
-        self._spi = spi;
+    def __init__(self, number):
         self._number = number;
         self._bipolar = False
 
@@ -22,8 +21,7 @@ class AD7124Setup:
         TODO
         """
 
-    # This is a setter so conver to property.
-    def set_bipolar_input(self, bipolar):
+    def set_bipolar(self, bipolar):
         self._bipolar = bipolar
 
     def write(self):

@@ -113,11 +113,6 @@ ad7124 \[options\]
 -s  --sample-rate   Sample rate: whatever the ADC can do.
 -o  --output-file   Write output to CSV file instead of stdout.
 
-TEST NEW CODE
-
-
-
- 
 #### Phase 2
 
 There are requirements to monitor the following: 

@@ -13,11 +13,13 @@ class AD7124Channel:
     defaults that do what is generally needed.
     """
 
-    def __init__(self, spi, number):
-        self._spi = spi;
-        self._number = number;
+    def __init__(self, number):
         self._setup = None
         self._pin = 0
+        # Properties
+        self._number = number;
+        self._scale = 1.0
+        self._register_enum = None
 
     def set_defaults(self):
         """ Set the channel to use bipolar inputs and setup[0].
@@ -30,18 +32,37 @@ class AD7124Channel:
     def use_setup(self, setup):
         self._setup = setup
 
-    def write(self):
-        """ Write the internal values to the various ADC registers. """
-        # self._spi.write_register(register, value)
-        pass
+    @property
+    def scale(self):
+        return self._scale
+        
+    @scale.setter
+    def scale(self, scale):
+        self._scale = scale
+
+    @property
+    def register(self):
+        return self._register_enum
+        
+    @register.setter
+    def register(self, register_enum):
+        self._register_enum = register_enum
 
     @property
     def number(self):
         return self._number
 
-    def read(self):
+    def write(self):
+        """ Write the internal values to the various ADC registers. """
+        # self._spi.write_register(register, value)
+        pass
+
+    def read(self, pi, spi):
+        """ Return the voltage of the channel after scaling. """
         value = 0.0
-        result = self._spi.read_no_wait()
+        result = spi.read_register(pi, self._register_enum)
+        print("channel.read:", result)
         # TODO Convert result into value.
+        value *= self.scale
         return value
 
