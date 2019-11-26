@@ -66,11 +66,63 @@ Added this code to the repo.  Needed SPI and GPIO so found the
 platform_drivers.c/h files and wrote a test program to drive it.  It worked
 apart from the resulting app has SCLK and CE0 swapped.  Tried to figoue out how 
 to fix this but it started getting deeply into Linux device trees, so I gave up 
-and tried pigpio instead.
+and tried PiGPIO instead.
 
-## Pigpio
+### PiGPIO
 Copied my test code over from the nRF905Py driver and hacked it to verify the 
 mode of operation.  Initially, tried to read the Id register as this was
 recommended in the docs.  No response.  Tried to read an ADC register and it 
-came back with numbers. 
+came back with numbers.  Figured out that I wasn't setting a read bit when I was
+trying to read the ID.  Fixed the code and that works. 
 
+This works for me so using this for the rest of the project. 
+
+### AD7124
+
+This device has many features and is very configurable.  This makes it 
+"interesting" to program. 
+
+#### Phase 1
+
+For the first phase of implementation, we need to measure the following voltage
+ranges:
+    +/-7V - pendulum tribometer from the charge amplifiers.
+    0 to 9V - TODO get name.
+
+So the plan is to create two inputs, one for the +/-7V and the other for the 
+0 to 9V measurements.  There will be scaling applied at the inputs in the form
+of a fixed potential divider network to scale the input voltages to a range 
+that the ADC can use. 
+
+So what needs to be done is to configure two channels, each connected to 
+its own input pin and using its own setup.  Then we need to be able to start 
+and stop the continuous reading of both channels.  
+
+The frequency of reading each channel should be adjustable so that trade offs
+can be experimented with.
+
+The following shall be fixed in software:
+ power mode - full
+ input pin to channel and setup and all related registers.
+
+The users will use a command line program to control the ADC. It will have the 
+following features and options:
+
+ad7124 \[options\] 
+-h  --help          Display usage and all options.
+-s  --sample-rate   Sample rate: whatever the ADC can do.
+-o  --output-file   Write output to CSV file instead of stdout.
+
+TEST NEW CODE
+
+
+
+ 
+#### Phase 2
+
+There are requirements to monitor the following: 
+ - monitoring speed using rotary encoders (digital input).
+ - monitoring temperatures using thermocouples.
+
+The AD7124 can be used for all sorts of things from digital IO and even using 
+thermocouples so can probably be used for some or all of the above. 

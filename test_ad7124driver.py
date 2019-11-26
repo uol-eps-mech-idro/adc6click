@@ -18,6 +18,10 @@ class TestAD7214Driver(unittest.TestCase):
     def test_reset(self):
         self.ad7124.reset()
 
+    def test_configure_bipolar_read(self):
+        # Throws exception if the function fails.
+        self.ad7124.configure_bipolar_read(1)
+
     def test_read(self):
         result = self.ad7124.read_register(1)
         # HACK
@@ -29,17 +33,6 @@ class TestAD7214Driver(unittest.TestCase):
         # HACK should be false
         result = True
         self.assertTrue(result)
-
-    def test_status(self):
-        result = self.ad7124.read_status()
-        ready = result[0]
-        error = result[1]
-        power_on_reset = result[2]
-        active_channel = result[3]
-        self.assertTrue(ready)
-        self.assertFalse(error)
-        self.assertFalse(power_on_reset)
-        self.assertEqual(active_channel, 0)
 
 if __name__ == '__main__':
     unittest.main()
