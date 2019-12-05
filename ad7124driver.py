@@ -86,6 +86,31 @@ class AD7124Driver:
         channel.use_setup(self._setups[1])
         channel.write()
 
+    def read_voltage(self, channel_num):
+        """ The Voltage of the given channel is returned.
+        """
+        channel = self._channels[channel_num]
+        voltage = channel.read(self._pi, self._spi)
+        print("read_voltage: ", voltage)
+        return voltage
+
+    def read_register(self, register_name):
+        # NOT TESTED
+        """ The value of the given register is returned.
+        """
+        print("read_register")
+        result = self._spi.read_register(self._pi, register_name)
+        print("read_register result", result)
+        return result
+
+    def write_register(self, register, data):
+        # FIXME
+        """ The data is wrtten to the given register.
+        Return True if the value was successfully written.
+        """
+        result = False
+        return result
+
     def read_channels(self):
         # FIXME
         """ Read all active channels and output the values to stdout.
@@ -108,31 +133,5 @@ class AD7124Driver:
             except KeyboardInterrupt:
                 break
         print("Finished")
-
-# Not final
-
-    def read_register(self, register_name):
-        """ The value of the given register is returned.
-        """
-        print("read_register")
-        result = self._spi.read_register(self._pi, register_name)
-        print("read_register result", result)
-        return result
-
-    def read_voltage(self, channel_num):
-        """ The Voltage of the given channel is returned.
-        """
-        channel = self._channels[channel_num]
-        channel.register = AD7124RegNames.DATA_REG
-        voltage = channel.read(self._pi, self._spi)
-        print("read_voltage: ", voltage)
-        return voltage
-
-    def write_register(self, register, data):
-        """ The data is wrtten to the given register.
-        Return True if the value was successfully written.
-        """
-        result = False
-        return result
 
 

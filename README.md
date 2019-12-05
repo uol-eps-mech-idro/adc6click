@@ -1,11 +1,13 @@
 # ADC6Click
 
-This project implements a Python 3 driver for the MikroElectronica ADC 6 Click board that uses the AD7214-8 24 bit ADC.
+This project implements a Python 3 driver for the MikroElectronica ADC 6 Click 
+board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
+1. Configure ADC for read - HERE
+
+## DONE
 1. Read the ID register.
-2. Write to a register
-3. Configure ADC for read
 
 
 
@@ -73,9 +75,11 @@ Copied my test code over from the nRF905Py driver and hacked it to verify the
 mode of operation.  Initially, tried to read the Id register as this was
 recommended in the docs.  No response.  Tried to read an ADC register and it 
 came back with numbers.  Figured out that I wasn't setting a read bit when I was
-trying to read the ID.  Fixed the code and that works. 
+trying to read the ID.  Fixed the code and it works.
 
 This works for me so using this for the rest of the project. 
+
+
 
 ### AD7124
 
@@ -120,4 +124,14 @@ There are requirements to monitor the following:
  - monitoring temperatures using thermocouples.
 
 The AD7124 can be used for all sorts of things from digital IO and even using 
-thermocouples so can probably be used for some or all of the above. 
+thermocouples so can probably be used for some or all of the above.
+
+## Voltage converter-
+
+https://bestengineeringprojects.com/9v-dc-to-plusminus-5v-dc-converter/
+https://www.nutsvolts.com/magazine/article/dc-voltage-converter-circuits
+Figures 9, 11, 12 (best).
+Alternatively use two USB plugtops, one to power the RPi as usual.  The other
+is used with voltage regulators to provide two lots of 1.25V. 
+
+

@@ -3,6 +3,7 @@
 
 from ad7124setup import AD7124Setup
 from ad7124spi import AD7124SPI
+from ad7124registers import AD7124RegNames
 
 class AD7124Channel:
     """ This class represents the channel concept of the AD7124.
@@ -19,7 +20,6 @@ class AD7124Channel:
         # Properties
         self._number = number;
         self._scale = 1.0
-        self._register_enum = None
 
     def set_defaults(self):
         """ Set the channel to use bipolar inputs and setup[0].
@@ -41,14 +41,6 @@ class AD7124Channel:
         self._scale = scale
 
     @property
-    def register(self):
-        return self._register_enum
-        
-    @register.setter
-    def register(self, register_enum):
-        self._register_enum = register_enum
-
-    @property
     def number(self):
         return self._number
 
@@ -59,10 +51,10 @@ class AD7124Channel:
 
     def read(self, pi, spi):
         """ Return the voltage of the channel after scaling. """
-        value = 0.0
-        result = spi.read_register(pi, self._register_enum)
+        result = spi.read_register(pi, AD7124RegNames.DATA_REG)
         print("channel.read:", result)
-        # TODO Convert result into value.
-        value *= self.scale
+        int_value (result[0] << 16) + (result[1] << 8) + result[2]
+        # int_value is in range
+        value *= self._scale
         return value
 
