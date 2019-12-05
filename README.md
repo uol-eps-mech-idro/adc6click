@@ -126,7 +126,7 @@ There are requirements to monitor the following:
 The AD7124 can be used for all sorts of things from digital IO and even using 
 thermocouples so can probably be used for some or all of the above.
 
-## Voltage converter-
+## Voltage converter
 
 https://bestengineeringprojects.com/9v-dc-to-plusminus-5v-dc-converter/
 https://www.nutsvolts.com/magazine/article/dc-voltage-converter-circuits

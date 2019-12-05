@@ -22,10 +22,10 @@ class TestAD7214Driver(unittest.TestCase):
         self.ad7124.reset()
 
     def test_read_voltage(self):
-        self.ad7124.configure()
         # Channel 0 default is continuous reading in bipolar mode.
         channel_number = 0
-        for _ in range(0,20):
+        self.ad7124.configure(channel_number)
+        for _ in range(0, 20):
             voltage = self.ad7124.read_voltage(channel_number)
             # Assumes disconnected input floats around 0 Volts.
             self.assertAlmostEqual(voltage, 0.0)
