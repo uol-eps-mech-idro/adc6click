@@ -24,7 +24,7 @@ class AD7124Channel:
         # FIXME Hacked these to make it work
         self._setup = 0  # 0 to 7.
         self._positive_pin = 0  # AIN0
-        self._negative_pin = 1  # Ground
+        self._negative_pin = 0b1001  # Ground
         self._enabled = True
         # Properties
         self._number = number;
@@ -34,7 +34,7 @@ class AD7124Channel:
         """ """
         # TODO
         pass
-    
+
     def set_single(self, pin):
         self._positive_pin = pin
         self._negative_pin = 0
@@ -49,7 +49,7 @@ class AD7124Channel:
     @property
     def scale(self):
         return self._scale
-        
+
     @scale.setter
     def scale(self, scale):
         self._scale = scale
@@ -78,9 +78,8 @@ class AD7124Channel:
     def read(self, pi, spi):
         """ Return the voltage of the channel after scaling. """
         result = spi.read_register(pi, AD7124RegNames.DATA_REG)
-        print("channel.read:", result)
         int_value = (result[0] << 16) + (result[1] << 8) + result[2]
-        # int_value is in range
         value = int_value * self._scale
+        print("channel.read:", result, int_value, value)
         return value
 

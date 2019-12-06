@@ -59,6 +59,8 @@ class AD7124Driver:
         # FIXME This is a quick hack to get something working.
         # channel is ignored.  Using channel 0 and setup 0.
         # write_register(self, pi, register_enum, data)
+        self._configure_control_register()
+        self._configure_error_enable_register()
         self._setups[0].write(self._pi, self._spi)
         self._channels[0].write(self._pi, self._spi)
 
@@ -71,13 +73,21 @@ class AD7124Driver:
         return voltage
 
     def read_register(self, register_name):
-        # NOT TESTED
         """ The value of the given register is returned.
         """
         print("read_register")
         result = self._spi.read_register(self._pi, register_name)
         print("read_register result", result)
+        status = self._spi.read_status(self._pi)
+        print("read_register status", status)
         return result
+
+    def read_status(self):
+        """ The value of the given register is returned.
+        """
+        status = self._spi.read_status(self._pi)
+        print("read_register status", status)
+        return status
 
     def write_register(self, register, data):
         # FIXME
@@ -110,4 +120,8 @@ class AD7124Driver:
                 break
         print("Finished")
 
+    def _configure_control_register(self):
+        pass
 
+    def _configure_error_enable_register(self):
+        pass

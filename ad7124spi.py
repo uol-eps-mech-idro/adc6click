@@ -101,13 +101,15 @@ class AD7124SPI:
     def read_register(self, pi, register_enum): # pylint: disable=C0103
         """ Returns the value read from the register as a list of int values.
         """
-        address = register_enum
-        size = self._registers.size(register_enum)
         to_send = []
-        command = self._build_command(address, True)
+        command = self._build_command(register_enum, True)
         to_send.append(command)
-        for _ in range(0, size):
-            to_send.append(0)
+        # Send correct number of padding bytes to get result.
+        size = self._registers.size(register_enum)
+        num_bytes = self._registers.size(register_enum)
+        value = 0
+        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        to_send += value_bytes
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         if count == size + 1:
             # Remove first value as always 0xFF

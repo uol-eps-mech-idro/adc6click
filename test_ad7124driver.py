@@ -4,7 +4,7 @@
 import unittest
 
 from ad7124driver import AD7124Driver
-
+from ad7124registers import AD7124RegNames
 
 class TestAD7214Driver(unittest.TestCase):
 
@@ -30,10 +30,24 @@ class TestAD7214Driver(unittest.TestCase):
             # Assumes disconnected input floats around 0 Volts.
             self.assertAlmostEqual(voltage, 0.0)
 
-    @unittest.expectedFailure
     def test_read(self):
-        result = self.ad7124.read_register(1)
-        self.assertTrue(result)
+        """ Reads the Id register.  Should return 0x14."""
+        result = self.ad7124.read_register(AD7124RegNames.ID_REG)
+        id_value = int(result[0])
+        self.assertEqual(0x14, id_value)
+
+    def test_read_status(self):
+        """ Reads the status register. """
+        status = self.ad7124.read_status()
+        ready = status[0]
+        error = status[1]
+        power_on_reset = status[2]
+        active_channel = status[3]
+        self.assertEqual(True, ready)
+        self.assertEqual(False, error)
+        self.assertEqual(False, power_on_reset)
+        self.assertEqual(0, active_channel)
+
 
     @unittest.expectedFailure
     def test_write(self):

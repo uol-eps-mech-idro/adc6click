@@ -35,10 +35,10 @@ class AD7124Setup:
         settings = []
         # default: value = 0x0860
         # 15:12  Always 0
-        # 11     bipolar off 0
+        # 11     bipolar off 0 (default is on)
         # 10:9   burnout current, 0 = off.
         # 8:5    buffer bits. Default is 5 = 1, 6 = 1
-        # 4:3    REF_SEL, 10 is internal.
+        # 4:3    REF_SEL. Default is 0, REFIN1+/REFIN1-
         # 2:0    PGA gain - 0 for now.
         value = 0x0060
         register_enum = AD7124RegNames.CFG0_REG

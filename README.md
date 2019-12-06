@@ -4,8 +4,8 @@ This project implements a Python 3 driver for the MikroElectronica ADC 6 Click
 board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
-1. Configure ADC for read - HERE
-run it and fix the problem.
+1. Configure ADC for read
+Sends correct values to channel and setup registers.
 
 ## DONE
 1. Read the ID register.
