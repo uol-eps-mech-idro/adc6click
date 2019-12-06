@@ -70,12 +70,10 @@ class AD7124Channel:
         value |= (setup << 12)  # bits 14:12
         enabled = self._enabled & 0x01
         value |= (enabled << 15)  # bit 15
-        # Convert value to bytes.
-        value_bytes = value.to_bytes(2, byteorder='big')
         # Set channel register.
-        register_name = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value + self._number)
-        print("write: channel reg:", register_name, "value_bytes:", value_bytes)
-        spi.write_register(pi, register_name, value_bytes)
+        register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value + self._number)
+        print("channel.write: enum:", register_enum, "value:", value)
+        spi.write_register(pi, register_enum, value)
 
     def read(self, pi, spi):
         """ Return the voltage of the channel after scaling. """

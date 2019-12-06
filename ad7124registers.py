@@ -133,7 +133,7 @@ class AD7124Registers:
         return self._registers[register_enum.value][0]
     
     def size(self, register_enum):
-        print("registers.size:", register_enum)
+        # print("registers.size:", register_enum)
         return self._registers[register_enum.value][1]
 
     def access(self, register_enum):

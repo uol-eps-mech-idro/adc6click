@@ -4,8 +4,7 @@
 
 import pigpio
 
-from ad7124registers import AD7124Registers
-from ad7124registers import AD7124RegNames
+from ad7124registers import AD7124RegNames, AD7124Registers
 
 class AD7124SPI:
     """ A wrapper that hides the SPI calls.
@@ -79,24 +78,25 @@ class AD7124SPI:
         if read:
             command += (1 << 6)
         # Remaining 6 bits are register address.
-        command += (register_enum.value & 0x2f)
+        command += (register_enum.value & 0x3f)
         return command
 
-    def write_register(self, pi, register_enum, data_bytes): # pylint: disable=C0103
-        """ Write the given data to the given register.
+    def write_register(self, pi, register_enum, value): # pylint: disable=C0103
+        """ Write the given value to the given register.
         """
-        if len(data_bytes) == self._registers.size(register_enum):
-            to_send = []
-            command = self._build_command(register_enum)
-            to_send.append(command)
-            to_send += data_bytes
-            # Print to_send as hex values for easier debugging.
-            to_send_string = [hex(i) for i in to_send]
-            print("_write_register: to_send", to_send_string)
-            # Write the data.
-            pi.spi_xfer(self._spi_handle, to_send)
-        else:
-            raise ValueError("Length of data does not match the size of the register.")
+        # Command value
+        to_send = []
+        command = self._build_command(register_enum)
+        to_send.append(command)
+        # Convert value to bytes.
+        num_bytes = self._registers.size(register_enum)
+        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        to_send += value_bytes
+        # Print to_send as hex values for easier debugging.
+        to_send_string = [hex(i) for i in to_send]
+        print("_write_register: to_send", to_send_string)
+        # Write the data.
+        pi.spi_xfer(self._spi_handle, to_send)
 
     def read_register(self, pi, register_enum): # pylint: disable=C0103
         """ Returns the value read from the register as a list of int values.
