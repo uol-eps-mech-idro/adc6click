@@ -82,16 +82,18 @@ class AD7124SPI:
         command += (register_enum.value & 0x2f)
         return command
 
-    def write_register(self, pi, register_enum, data): # pylint: disable=C0103
+    def write_register(self, pi, register_enum, data_bytes): # pylint: disable=C0103
         """ Write the given data to the given register.
         """
-        if len(data) == self._registers.size(register_enum):
+        if len(data_bytes) == self._registers.size(register_enum):
             to_send = []
-            register_address = register_enum.value
-            command = self._build_command(register_address)
+            command = self._build_command(register_enum)
             to_send.append(command)
-            to_send += data
-            print("_write_register: to_send", to_send)
+            to_send += data_bytes
+            # Print to_send as hex values for easier debugging.
+            to_send_string = [hex(i) for i in to_send]
+            print("_write_register: to_send", to_send_string)
+            # Write the data.
             pi.spi_xfer(self._spi_handle, to_send)
         else:
             raise ValueError("Length of data does not match the size of the register.")

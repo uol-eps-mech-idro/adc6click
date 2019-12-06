@@ -15,20 +15,34 @@ class AD7124Channel:
     """
 
     def __init__(self, number):
-        self._setup = None
-        self._pin = 0
+        """ number is in the range 0 to 15. """
+        # Defaults to safest values
+        self._setup = 0  # 0 to 7.
+        self._positive_pin = 0  # AIN0
+        self._negative_pin = 0b1001  # Ground
+        self._enabled = False
+        # FIXME Hacked these to make it work
+        self._setup = 0  # 0 to 7.
+        self._positive_pin = 0  # AIN0
+        self._negative_pin = 1  # Ground
+        self._enabled = True
         # Properties
         self._number = number;
         self._scale = 1.0
 
     def set_defaults(self):
-        """ Set the channel to use bipolar inputs and setup[0].
-        """
+        """ """
+        # TODO
         pass
     
-    def set_input_pin(self, pin):
-        self._pin = pin
-        
+    def set_single(self, pin):
+        self._positive_pin = pin
+        self._negative_pin = 0
+
+    def set_differential(self, positive_pin, negative_pin):
+        self._positive_pin = positive_pin
+        self._negative_pin = negative_pin
+
     def use_setup(self, setup):
         self._setup = setup
 
@@ -44,17 +58,31 @@ class AD7124Channel:
     def number(self):
         return self._number
 
-    def write(self):
+    def write(self, pi, spi):
         """ Write the internal values to the various ADC registers. """
-        # self._spi.write_register(register, value)
-        pass
+        # The value contains 16 bits.
+        value = 0
+        ainm = self._negative_pin & 0x1f
+        value |= ainm # bits 4:0
+        ainp = self._positive_pin & 0x1f
+        value |= (ainp << 5)  # bits 9:5
+        setup = self._setup & 0x07
+        value |= (setup << 12)  # bits 14:12
+        enabled = self._enabled & 0x01
+        value |= (enabled << 15)  # bit 15
+        # Convert value to bytes.
+        value_bytes = value.to_bytes(2, byteorder='big')
+        # Set channel register.
+        register_name = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value + self._number)
+        print("write: channel reg:", register_name, "value_bytes:", value_bytes)
+        spi.write_register(pi, register_name, value_bytes)
 
     def read(self, pi, spi):
         """ Return the voltage of the channel after scaling. """
         result = spi.read_register(pi, AD7124RegNames.DATA_REG)
         print("channel.read:", result)
-        int_value (result[0] << 16) + (result[1] << 8) + result[2]
+        int_value = (result[0] << 16) + (result[1] << 8) + result[2]
         # int_value is in range
-        value *= self._scale
+        value = int_value * self._scale
         return value
 

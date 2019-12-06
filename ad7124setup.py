@@ -15,16 +15,18 @@ class AD7124Setup:
     def __init__(self, number):
         self._number = number;
         self._bipolar = False
-
-    def set_defaults(self):
-        """ Configure the setup to use:
-        TODO
-        """
+        self._differential = False
 
     def set_bipolar(self, bipolar):
         self._bipolar = bipolar
 
-    def write(self):
+    def set_single(self, pin):
+        self._differential = False
+
+    def set_differential(self, pin1, pin2):
+        self._differential = True
+
+    def write(self, pi, spi):
         """ Writes all internal settings to the various registers.
         """
         pass

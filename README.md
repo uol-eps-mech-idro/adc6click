@@ -5,6 +5,7 @@ board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
 1. Configure ADC for read - HERE
+run it and fix the problem.
 
 ## DONE
 1. Read the ID register.

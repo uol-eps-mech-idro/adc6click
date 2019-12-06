@@ -52,39 +52,15 @@ class AD7124Driver:
         """ Resets the AD7124 to power up conditions. """
         self._spi.reset(self._pi)
 
-    def configure(self):
-        """ Sets up two channels, each using a separate setup to continuously 
-        convert values.
+    def configure(self, channel):
+        """ Set up the given channel.
         Must be called after init.
         """
-        self._configure_setups()
-        self._configure_channels()
-
-    def _configure_setups(self):
-        # Configure setup 0
-        setup = self._setups[0]
-        setup.set_defaults()
-        setup.set_bipolar(True)
-        setup.write()
-        # Configure setup 1
-        setup = self._setups[1]
-        setup.set_defaults()
-        setup.set_bipolar(False)
-        setup.write()
-
-    def _configure_channels(self):
-        # Configure channel 0
-        channel = self._channels[0]
-        channel.set_defaults()
-        channel.set_input_pin(0)
-        channel.use_setup(self._setups[0])
-        channel.write()
-        # Configure channel 1
-        channel = self._channels[1]
-        channel.set_defaults()
-        channel.set_input_pin(1)
-        channel.use_setup(self._setups[1])
-        channel.write()
+        # FIXME This is a quick hack to get something working.
+        # channel is ignored.  Using channel 0 and setup 0.
+        # write_register(self, pi, register_enum, data)
+        self._setups[0].write(self._pi, self._spi)
+        self._channels[0].write(self._pi, self._spi)
 
     def read_voltage(self, channel_num):
         """ The Voltage of the given channel is returned.
