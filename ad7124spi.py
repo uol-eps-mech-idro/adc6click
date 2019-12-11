@@ -3,8 +3,10 @@
 """
 
 import pigpio
+import time
 
 from ad7124registers import AD7124RegNames, AD7124Registers
+
 
 class AD7124SPI:
     """ A wrapper that hides the SPI calls.
@@ -15,14 +17,13 @@ class AD7124SPI:
     AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b00  # Mode 3
 
-
     def __init__(self):
         """ Initialises the AD7124 device. """
         self._pi = pigpio.pi()
         self._registers = AD7124Registers()
         self._spi_handle = 0
 
-    def init(self, pi, position): # pylint: disable=C0103
+    def init(self, pi, position):  # pylint: disable=C0103
         """ Initialises the AD7124..
         position is the Pi2 click shield position number, 1 or 2.
         Throws an exception if it fails.
@@ -41,25 +42,26 @@ class AD7124SPI:
             raise ValueError('ERROR: position must be 1 or 2')
         # print("init: channel", spi_channel)
         # Open SPI device
-        self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
+        self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE,
+                                       spi_flags)
         # print("init 2")
+        self.reset(pi)
         # Check correct device is present.
         ad7124_id = self._read_id(pi)
         # print("init id", ad7124_id)
         if ad7124_id not in (0x14, 0x16):
             raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
-    def term(self, pi): # pylint: disable=C0103
+    def term(self, pi):  # pylint: disable=C0103
         """ Terminates the AD7124. """
         print("term")
         pi.spi_close(self._spi_handle)
 
-    def _read_id(self, pi): # pylint: disable=C0103
+    def _read_id(self, pi):  # pylint: disable=C0103
         """ The value of the ID register is returned. """
         result = 0
         # print("read_id")
         to_send = []
-        # Build command word
         command = self._build_command(AD7124RegNames.ID_REG, True)
         to_send.append(command)
         to_send.append(0)
@@ -71,17 +73,19 @@ class AD7124SPI:
         return result
 
     def _build_command(self, register_enum, read=False):
-        """ Builds a command byte. """
+        """ Builds a command byte.
+        First bit (bit 7) must be a 0.
+        Second bit (bit 6) is read (1) or write (0).
+        Remaining 6 bits are register address.
+        """
         command = 0
-        # First bit (bit 7) must be a 0
-        # Second bit (bit 6) is read (1) or write (0).
         if read:
             command += (1 << 6)
-        # Remaining 6 bits are register address.
         command += (register_enum.value & 0x3f)
         return command
 
-    def write_register(self, pi, register_enum, value): # pylint: disable=C0103
+    def write_register(self, pi, register_enum, value):
+            # pylint: disable=C0103
         """ Write the given value to the given register.
         """
         # Command value
@@ -98,7 +102,7 @@ class AD7124SPI:
         # Write the data.
         pi.spi_xfer(self._spi_handle, to_send)
 
-    def read_register(self, pi, register_enum): # pylint: disable=C0103
+    def read_register(self, pi, register_enum):  # pylint: disable=C0103
         """ Returns the value read from the register as a list of int values.
         """
         to_send = []
@@ -118,14 +122,15 @@ class AD7124SPI:
             data = []
         return data
 
-    def reset(self, pi): # pylint: disable=C0103
+    def reset(self, pi):  # pylint: disable=C0103
         """ Resets the AD7124 to power up conditions. """
         to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
         print("reset command", to_send)
         pi.spi_xfer(self._spi_handle, to_send)
-        # TODO WAIT UNTIL DONE
+        # TODO WAIT UNTIL PROPERLY READY
+        time.sleep(0.001)
 
-    def read_status(self, pi): # pylint: disable=C0103
+    def read_status(self, pi):  # pylint: disable=C0103
         """ Returns a tuple containing the values:
         (ready {bool}, error{bool}, power on reset{bool}, active channel)
         """
@@ -148,7 +153,8 @@ class AD7124SPI:
             active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
 
-    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0): # pylint: disable=C0103
+    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+            # pylint: disable=C0103
         """ Writes to the ADC control register.
         Default value of the register is 0x00 so defaults of 0 work.
         """
