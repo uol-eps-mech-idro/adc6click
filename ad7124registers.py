@@ -3,6 +3,7 @@
 
 from enum import Enum
 
+
 class AD7124RegNames(Enum):
 
     # List of all register names
@@ -64,10 +65,11 @@ class AD7124RegNames(Enum):
     GAIN6_REG = 0x37
     GAIN7_REG = 0x38
 
+
 class AD7124Registers:
     def __init__(self):
         self._registers = [
-            #Initial value, Size, Access Type,  Address
+            # Initial value, Size, Access Type,  Address
             (0x00,          1,    2),         # 0x00,
             (0x0000,        2,    1),         # 0x00,
             (0x0000,        3,    2),         # 0x01,

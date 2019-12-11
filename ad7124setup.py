@@ -4,20 +4,21 @@
 from ad7124spi import AD7124SPI
 from ad7124registers import AD7124RegNames
 
+
 class AD7124Setup:
     """ This class represents the setup concept of the AD7124.
     Each AD7124 setup has:
 
     This class is simplifies the setup needed for basic operation by setting
-    defaults that do what is generally needed and only providing additional 
+    defaults that do what is generally needed and only providing additional
     functions to set values that can be changed.
 
-    Each setup is made up of four registers: configuration, filter, gain and offset.
-    Most of the registers do not need to be setup.
+    Each setup is made up of four registers: configuration, filter, gain and
+    offset.  Most of the registers do not need to be setup.
     """
 
     def __init__(self, number):
-        self._number = number;
+        self._number = number
         self._bipolar = False
         self._differential = False
 
@@ -63,6 +64,7 @@ class AD7124Setup:
         for setting in settings:
             register_enum = setting[0]
             value = setting[1]
-            print("setup.write: enum", register_enum.name, "enum value", register_enum.value, "value", value)
+            print("setup.write: enum", register_enum.name,
+                  "enum value", register_enum.value, "value", value)
             # Write the data
             spi.write_register(pi, register_enum, value)
