@@ -132,4 +132,3 @@ class AD7124SPI:
                 value |= byte_value
         # print("read_register: value", value)
         return value
-

@@ -8,17 +8,20 @@ from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
 
 
-callback_count = 0
+class AD7214Callback():
 
-def callback():
-    callback_count += 1
+    def __init__(self):
+        self.count = 0
 
-def callback_reset():
-    callback_count = 0
-from ad7124registers import AD7124RegNames
+    def called(self):
+        self.count += 1
 
-def callback_get():
-    return callback_count
+    def reset(self):
+        self.count = 0
+
+    def get(self):
+        return self.count
+
 
 class TestAD7214Driver(unittest.TestCase):
 
@@ -35,7 +38,8 @@ class TestAD7214Driver(unittest.TestCase):
 
     def test_read_status(self):
         """ Verifies the status register.
-        Need to ensure that the active channel is 0.
+        After a reset, power on reset will be True.
+        The other values should be False, False, 0.
         """
         status = self.ad7124.read_status()
         print("trs", status)
@@ -48,11 +52,15 @@ class TestAD7214Driver(unittest.TestCase):
         self.assertEqual(True, power_on_reset)
         self.assertEqual(0, active_channel)
 
+    def test_write_reg_control(self):
+        """ TODO Can't easily test this as can't read back. """
+        pass
+
     @unittest.expectedFailure
-    def test_start(self):
+    def test_start_continuous_read(self):
         # assign callback
         callback_reset()
-        result = self.ad7124.start(callback)
+        result = self.ad7124.start_continuous_read(callback)
         self.assertTrue(result)
         # sleep for time for callback to happen.
         time.sleep(0.1)
@@ -61,9 +69,9 @@ class TestAD7214Driver(unittest.TestCase):
         self.assertGreat(callback_count, 0)
 
     @unittest.expectedFailure
-    def test_stop(self):
+    def test_stop_continuous_read(self):
         # Stop the read.
-        result = self.ad7124.stop(callback)
+        result = self.ad7124.stop_continuous_read(callback)
         self.assertTrue(result)
         # Wait for time to ensure that callbacks stop.
         time.sleep(0.1)

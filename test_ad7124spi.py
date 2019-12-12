@@ -36,9 +36,9 @@ class TestAD7214Spi(unittest.TestCase):
         value = self._spi.read_register(self._pi, register)
         self.assertEqual(0x8001, value)
         new_value = 0
-        new_value |= (1 << 15) # 15 Enabled.
-        new_value |= (0b10010 << 5) # 9:5 AINP = Internal reference.
-        new_value |= (0b10011) # 4:0 AINM = DGND.
+        new_value |= (1 << 15)  # 15 Enabled.
+        new_value |= (0b10010 << 5)  # 9:5 AINP = Internal reference.
+        new_value |= (0b10011)  # 4:0 AINM = DGND.
         self._spi.write_register(self._pi, register, new_value)
         value = self._spi.read_register(self._pi, register)
         print("trw:", new_value, value)

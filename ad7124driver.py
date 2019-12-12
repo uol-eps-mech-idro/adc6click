@@ -36,8 +36,12 @@ class AD7124Driver:
         Throws an exception if it fails.
         """
         self._spi.init(self._pi, position)
-        self._configure_control_register()
-        self._configure_error_enable_register()
+        # Use defaults for control register
+        clock_select = 0
+        mode = 0
+        power_mode = 0
+        self.configure_control_register(clock_select, mode, power_mode)
+        self.configure_error_enable_register()
         for i in range(0, 16):
             channel = AD7124Channel(i)
             self._channels.append(channel)
@@ -49,20 +53,6 @@ class AD7124Driver:
         """ Terminates the AD7124. """
         self._spi.term(self._pi)
         self._pi.stop()
-
-    def _configure_control_register(self):
-        pass
-
-    def _configure_error_enable_register(self):
-        pass
-
-    def start(self):
-        result = True
-        return result
-
-    def stop(self):
-        result = True
-        return result
 
     def read_status(self):
         """ Returns a tuple containing the values:
@@ -89,20 +79,29 @@ class AD7124Driver:
         active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
 
-    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+    def configure_control_register(self, clock_select, mode, power_mode):
         """ Writes to the ADC control register.
-        Default value of the register is 0x00 so defaults of 0 work.
+        Default value of the register is 0x0000 so defaults of 0 work.
         """
-        to_send = []
+        value = 0
         # The control register is 16 bits, MSB first.
-        # MSB - for now all 0s.
-        msb = 0b00000000
-        to_send.append(msb)
-        # Pack the given parameters
-        lsb = clock_select
-        lsb |= ((mode & 0x0f) << 2)
-        lsb |= ((power_mode & 0x03) << 6)
-        to_send.append(lsb)
-        print("_write_reg_control to_send", to_send)
-        self.write_register(pi, AD7124RegNames.ADC_CTRL_REG, to_send)
+        # MSB - for now all 0s, so nothing to do.
+        value |= (clock_select & 0x03)
+        value |= ((mode & 0x0f) << 2)
+        value |= ((power_mode & 0x03) << 6)
+        print("write_reg_control to_send", value)
+        self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
 
+    def configure_error_enable_register(self):
+        """ TODO """
+        pass
+
+    def start_continuous_read(self):
+        """ TODO """
+        result = True
+        return result
+
+    def stop_continuous_read(self):
+        """ TODO """
+        result = True
+        return result
