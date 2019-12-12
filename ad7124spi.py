@@ -23,12 +23,12 @@ class AD7124SPI:
         self._registers = AD7124Registers()
         self._spi_handle = 0
 
-    def init(self, pi, position):  # pylint: disable=C0103
+    def init(self, pi, position):
         """ Initialises the AD7124..
         position is the Pi2 click shield position number, 1 or 2.
         Throws an exception if it fails.
         """
-        print("init")
+        # print("init")
         # The Pi2 click shield only supports main bus, bit 8 = 0.
         spi_flags = 0
         # Set to mode 3
@@ -45,19 +45,27 @@ class AD7124SPI:
         self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE,
                                        spi_flags)
         # print("init 2")
-        self.reset(pi)
+        self._reset(pi)
         # Check correct device is present.
         ad7124_id = self._read_id(pi)
         # print("init id", ad7124_id)
         if ad7124_id not in (0x14, 0x16):
             raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
-    def term(self, pi):  # pylint: disable=C0103
+    def term(self, pi):
         """ Terminates the AD7124. """
-        print("term")
+        # print("term: pi", pi)
         pi.spi_close(self._spi_handle)
 
-    def _read_id(self, pi):  # pylint: disable=C0103
+    def _reset(self, pi):
+        """ Resets the AD7124 to power up conditions. """
+        to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
+        # print("reset command", to_send)
+        pi.spi_xfer(self._spi_handle, to_send)
+        # TODO WAIT UNTIL PROPERLY READY
+        time.sleep(0.001)
+
+    def _read_id(self, pi):
         """ The value of the ID register is returned. """
         result = 0
         # print("read_id")
@@ -85,7 +93,6 @@ class AD7124SPI:
         return command
 
     def write_register(self, pi, register_enum, value):
-            # pylint: disable=C0103
         """ Write the given value to the given register.
         """
         # Command value
@@ -98,11 +105,11 @@ class AD7124SPI:
         to_send += value_bytes
         # Print to_send as hex values for easier debugging.
         to_send_string = [hex(i) for i in to_send]
-        print("_write_register: to_send", to_send_string)
+        print("write_register: to_send", to_send_string)
         # Write the data.
         pi.spi_xfer(self._spi_handle, to_send)
 
-    def read_register(self, pi, register_enum):  # pylint: disable=C0103
+    def read_register(self, pi, register_enum):
         """ Returns the value read from the register as a list of int values.
         """
         to_send = []
@@ -115,58 +122,14 @@ class AD7124SPI:
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
+        # print("read_register: count", count, "data", data)
+        value = 0
         if count == size + 1:
-            # Remove first value as always 0xFF
+            # Remove first byte as always 0xFF
             data = data[1:]
-        else:
-            data = []
-        return data
+            for byte_value in data:
+                value = value << 8
+                value |= byte_value
+        # print("read_register: value", value)
+        return value
 
-    def reset(self, pi):  # pylint: disable=C0103
-        """ Resets the AD7124 to power up conditions. """
-        to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
-        print("reset command", to_send)
-        pi.spi_xfer(self._spi_handle, to_send)
-        # TODO WAIT UNTIL PROPERLY READY
-        time.sleep(0.001)
-
-    def read_status(self, pi):  # pylint: disable=C0103
-        """ Returns a tuple containing the values:
-        (ready {bool}, error{bool}, power on reset{bool}, active channel)
-        """
-        # RDY is inverted.
-        ready = True
-        error = False
-        power_on_reset = False
-        active_channel = 0
-        data = self.read_register(pi, AD7124RegNames.STATUS_REG)
-        print("read_status", data)
-        # FIXME Is this right?  Should be only one byte?
-        if len(data) == 2:
-            value = data[1]
-            if value & 0x80:
-                ready = False
-            if value & 0x40:
-                ready = True
-            if error & 0x10:
-                power_on_reset = True
-            active_channel &= 0x0f
-        return (ready, error, power_on_reset, active_channel)
-
-    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
-            # pylint: disable=C0103
-        """ Writes to the ADC control register.
-        Default value of the register is 0x00 so defaults of 0 work.
-        """
-        to_send = []
-        # The control register is 16 bits, MSB first.
-        # MSB - for now all 0s.
-        msb = 0b00000000
-        to_send.append(msb)
-        # Pack the given parameters
-        lsb = clock_select
-        lsb |= ((mode & 0x0f) << 2)
-        lsb |= ((power_mode & 0x03) << 6)
-        to_send.append(lsb)
-        print("_write_reg_control to_send", to_send)
-        self.write_register(pi, AD7124RegNames.ADC_CTRL_REG, to_send)
