@@ -36,6 +36,8 @@ class AD7124Driver:
         Throws an exception if it fails.
         """
         self._spi.init(self._pi, position)
+        self._configure_control_register()
+        self._configure_error_enable_register()
         for i in range(0, 16):
             channel = AD7124Channel(i)
             self._channels.append(channel)
@@ -48,80 +50,59 @@ class AD7124Driver:
         self._spi.term(self._pi)
         self._pi.stop()
 
-    def reset(self):
-        """ Resets the AD7124 to power up conditions. """
-        self._spi.reset(self._pi)
-
-    def configure(self, channel):
-        """ Set up the given channel.
-        Must be called after init.
-        """
-        # FIXME This is a quick hack to get something working.
-        # channel is ignored.  Using channel 0 and setup 0.
-        # write_register(self, pi, register_enum, data)
-        self._configure_control_register()
-        self._configure_error_enable_register()
-        self._setups[0].write(self._pi, self._spi)
-        self._channels[0].write(self._pi, self._spi)
-
-    def read_voltage(self, channel_num):
-        """ The Voltage of the given channel is returned.
-        """
-        channel = self._channels[channel_num]
-        voltage = channel.read(self._pi, self._spi)
-        print("read_voltage: ", voltage)
-        return voltage
-
-    def read_register(self, register_name):
-        """ The value of the given register is returned.
-        """
-        print("read_register")
-        result = self._spi.read_register(self._pi, register_name)
-        print("read_register result", result)
-        status = self._spi.read_status(self._pi)
-        print("read_register status", status)
-        return result
-
-    def read_status(self):
-        """ The value of the given register is returned.
-        """
-        status = self._spi.read_status(self._pi)
-        print("read_register status", status)
-        return status
-
-    def write_register(self, register, data):
-        # FIXME
-        """ The data is wrtten to the given register.
-        Return True if the value was successfully written.
-        """
-        result = False
-        return result
-
-    def read_channels(self):
-        # FIXME
-        """ Read all active channels and output the values to stdout.
-        Can only be called after configure has been called.
-        """
-        print("Reading all active channels")
-        # Print header
-        for channel in self._channels:
-            # Work out how to put this in columns.
-            print("Channel:", channel.number())
-        # Continuously read values from all active channels.
-        while True:
-            try:
-                for channel in self._channels:
-                    # Work out how to put this in columns.
-                    number = channel.number()
-                    value = channel.read()
-                    # Work out how to arrange this in columns.
-                    print("Ch, val:", number, value)
-            except KeyboardInterrupt:
-                break
-        print("Finished")
-
     def _configure_control_register(self):
         pass
 
     def _configure_error_enable_register(self):
         pass
+
+    def start(self):
+        result = True
+        return result
+
+    def stop(self):
+        result = True
+        return result
+
+    def read_status(self):
+        """ Returns a tuple containing the values:
+        (ready {bool}, error{bool}, power on reset{bool}, active channel)
+        NOTE: ready = True when ready.  The ADC sets bit 7 to low when ready
+        so this code inverts the sense to make it behave as the other flags do.
+        """
+        # RDY is inverted.
+        ready = True
+        error = False
+        power_on_reset = False
+        active_channel = 0
+        value = self._spi.read_register(self._pi, AD7124RegNames.STATUS_REG)
+        print("read_status", hex(value))
+        if value & 0x80:
+            ready = False
+            print("read_status: ready", ready)
+        if value & 0x40:
+            error = True
+            print("read_status: error", error)
+        if value & 0x10:
+            power_on_reset = True
+            print("read_status: power_on_reset", power_on_reset)
+        active_channel &= 0x0f
+        return (ready, error, power_on_reset, active_channel)
+
+    def write_reg_control(self, pi, power_mode=0, mode=0, clock_select=0):
+        """ Writes to the ADC control register.
+        Default value of the register is 0x00 so defaults of 0 work.
+        """
+        to_send = []
+        # The control register is 16 bits, MSB first.
+        # MSB - for now all 0s.
+        msb = 0b00000000
+        to_send.append(msb)
+        # Pack the given parameters
+        lsb = clock_select
+        lsb |= ((mode & 0x0f) << 2)
+        lsb |= ((power_mode & 0x03) << 6)
+        to_send.append(lsb)
+        print("_write_reg_control to_send", to_send)
+        self.write_register(pi, AD7124RegNames.ADC_CTRL_REG, to_send)
+
