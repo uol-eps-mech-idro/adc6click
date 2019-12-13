@@ -3,7 +3,6 @@
 
 import time
 import unittest
-
 from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
 

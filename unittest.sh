@@ -5,4 +5,4 @@ then
     sudo pigpiod
 fi
 
-python3 -m unittest
+python3 -m unittest -v
