@@ -44,7 +44,7 @@ class AD7124Driver:
         for i in range(0, 8):
             setup = AD7124Setup(i)
             self._setups.append(setup)
-        self._set_diagnositics()
+        self._set_diagnostics()
         clock_select = 0  # Internal clock.
         mode = 0  # Continuous conversion.
         power_mode = 3  # Full power mode.
@@ -65,22 +65,9 @@ class AD7124Driver:
         result = True
         return result
 
-    def read(self):
-        """ This empties a queue being filled by the ADC driver.
-        Returns a list of tuple containing (timestamp, channel1, channel2)
-        """
-        # def process_data(threadName, q):
-        while True:
-            data = self.q.get()
-            if exitFlag:
-                break
-            print("%s processing %s" % (threadName, data))
-        values_list = [(102456, 7, 11), (102457, 8, 12)]
-        return values_list
-
     def _set_diagnostics(self):
         """ Setting diagnostics means setting the ERROR_EN register.
-        For this driver, we just set the default of 0x000040.
+        Set the default of 0x000040.
         """
         self._spi.write_register(self._pi, AD7124RegNames.ERREN_REG, 0x000040)
 
@@ -97,6 +84,19 @@ class AD7124Driver:
         print("write_reg_control to_send", value)
         self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
 
+    def read_data_wait(self):
+        """ Reads the data register.  Blocks until data is ready.
+        """
+        ready = False
+        timeout = 300
+        while not ready and timeout > 0:
+            status = self.read_status()
+            ready = status[0]
+            timeout -= 1
+        value = self._spi.read_register(self._pi, AD7124RegNames.DATA_REG)
+        print("read_data_wait:", timeout, hex(value))
+        return (timeout, value)
+
     def read_status(self):
         """ Returns a tuple containing the values:
         (ready {bool}, error{bool}, power on reset{bool}, active channel)
@@ -109,18 +109,15 @@ class AD7124Driver:
         power_on_reset = False
         active_channel = 0
         value = self._spi.read_register(self._pi, AD7124RegNames.STATUS_REG)
-        print("read_status", hex(value))
+        #print("read_status", hex(value))
         if value & 0x80:
             ready = False
-            print("read_status: ready", ready)
+            #print("read_status: ready", ready)
         if value & 0x40:
             error = True
-            print("read_status: error", error)
+            #print("read_status: error", error)
         if value & 0x10:
             power_on_reset = True
-            print("read_status: power_on_reset", power_on_reset)
+            #print("read_status: power_on_reset", power_on_reset)
         active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
-
-
-

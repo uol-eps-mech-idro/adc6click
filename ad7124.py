@@ -29,7 +29,8 @@ class AD7124:
         usage = "usage: %prog [options] [1] [2]\n"
         usage += "Reads the channels 1 and/or 2 continuously.\n"
         usage += "\tChannel 1 reads -5V to +5V. \n"
-        usage += "\tChannel 2 reads 0V to 10V."
+        usage += "\tChannel 2 reads 0V to 10V. \n"
+        usage += "To stop the program, press Ctrl+c."
         version = "%prog version " + self.VERSION
         parser = OptionParser(usage, version=version)
         parser.set_defaults(filename="ad7124.csv", output="console",
@@ -62,6 +63,9 @@ class AD7124:
                 self._stdout = True
 
     def run(self):
+        """ This function continuously reads the ADC selected channels until
+        the user presses Ctrl+c.
+        """
         print("Starting...")
         self._write_header()
         self._adc.init(self._position)

@@ -55,6 +55,14 @@ class TestAD7214Driver(unittest.TestCase):
         """ TODO Can't easily test this as can't read back. """
         pass
 
+    def test_read_data_wait(self):
+        """ Set up the ADC to do a read.
+        Read the status register until a conversion occurs.
+        Read the value of the conversion.
+        """
+        value = self.ad7124.read_data_wait()
+
+
     @unittest.expectedFailure
     def test_start_continuous_read(self):
         # assign callback
