@@ -16,44 +16,25 @@ class AD7124Channel:
     """
 
     def __init__(self, number):
-        """ number is in the range 0 to 15. """
-        # Defaults to safest values
-        self._setup = 0  # 0 to 7.
-        self._positive_pin = 0  # AIN0
-        self._negative_pin = 0b1001  # Ground
-        self._enabled = False
-        # FIXME Hacked these to make it work
-        self._setup = 0  # 0 to 7.
-        self._positive_pin = 0  # AIN0
-        self._negative_pin = 0b1001  # Ground
-        self._enabled = True
-        # Properties
-        self._number = number
-        self._scale = 1.0
-
-    def set_defaults(self):
-        """ """
-        # TODO
-        pass
-
-    def set_single(self, pin):
-        self._positive_pin = pin
-        self._negative_pin = 0
-
-    def set_differential(self, positive_pin, negative_pin):
-        self._positive_pin = positive_pin
-        self._negative_pin = negative_pin
-
-    def use_setup(self, setup):
-        self._setup = setup
-
-    @property
-    def scale(self):
-        return self._scale
-
-    @scale.setter
-    def scale(self, scale):
-        self._scale = scale
+        """ Set default values for the given channel number.
+        Channel 0 uses pin 0 and setup 0.
+        Channel 1 uses pin 1 and setup 1.
+        FIXME: This is a bit of a hack as only 2 channels are supported.
+        """
+        if number == 0:
+            self._setup = 0
+            self._positive_pin = 0  # AIN0
+            self._negative_pin = 0b1001  # Ground
+            self._enabled = True
+            self._scale = 1.0
+        elif number == 1:
+            self._setup = 1
+            self._positive_pin = 1  # AIN1
+            self._negative_pin = 0b1001  # Ground
+            self._enabled = True
+            self._scale = 1.0
+        # else:
+            # raise ValueError("number out of range")
 
     @property
     def number(self):

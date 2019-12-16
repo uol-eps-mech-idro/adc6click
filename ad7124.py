@@ -46,14 +46,14 @@ class AD7124:
         print("print options", options, "channels", self._channels)
         num_channels = len(self._channels)
         print("print num_channels", num_channels)
-        if num_channels != 1 and num_channels != 2:
+        if num_channels not in (1, 2):
             parser.error("must have at least one channel.")
-        if options.position == 1 or options.position == 2:
+        if options.position in (1, 2):
             self._position = options.position
         else:
             parser.error("position must be 1 or 2.")
         if options.format:
-            output_format = options.format.to_lower()
+            output_format = options.format.lower()
             if output_format == "csv":
                 self._csv = True
                 self._filename = options.filename
@@ -64,42 +64,21 @@ class AD7124:
     def run(self):
         print("Starting...")
         self._write_header()
-        self._adc_init()
+        self._adc.init(self._position)
         try:
             while True:
-                values_list = self._adc_read()
+                values_list = self._adc.read()
                 for values in values_list:
                     self._write_values(values)
                 time.sleep(0.010)
         except KeyboardInterrupt:
-            print("Stopping...")
+            print("\nStopping...")
         finally:
-            self._adc_term()
+            self._adc.term()
             self._write_footer()
-
-    def _adc_init(self):
-        """ Tell ADC which channels to use.
-        Then tell it to start continuous reading.
-        """
-        #self._adc.init(self._position)
-        pass
-
-    def _adc_read(self):
-        """ This empties a queue being filled by the ADC driver.
-        Returns a list of tuple containing (timestamp, channel1, channel2)
-        """
-        values = [(102456, 7, 11)]
-        return values
-
-    def _adc_term(self):
-        #self._adc.term()
-        pass
 
     def _write_header(self):
         print("Starting capture on channels", self._channels)
-        if self._stdout:
-            # TODO Needs better formatting
-            print(timestamp, values)
         if self._csv:
             # TODO Open file
             print("Open CSV file")
