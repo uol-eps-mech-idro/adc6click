@@ -130,7 +130,7 @@ class AD7124SPI:
             # Remove first byte as always 0xFF
             data = data[1:]
             for byte_value in data:
-                value = value << 8
+                value <<= 8
                 value |= byte_value
         print("read_register: value", hex(value))
         return value

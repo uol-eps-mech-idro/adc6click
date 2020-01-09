@@ -15,32 +15,33 @@ class AD7124Channel:
     defaults that do what is generally needed.
     """
 
-    def __init__(self, channel):
+    def __init__(self, number):
         """ Set default values for the given channel number.
         Channel 1 uses pin 1 and setup 1.
         Channel 2 uses pin 2 and setup 2.
+        Channel 15 is the internal temperature sensor.
         TODO Add parameters?
         """
         # Defaults to do nothing
-        self._channel = channel
+        self._number = number
         self._setup = 0
         self._positive_pin = 0b1001  # Ground
         self._negative_pin = 0b1001  # Ground
         self._enabled = False
         self._scale = 1.0
-        if 0 <= channel <= 15:
+        if 0 <= number <= 15:
             # Configure each channel here.
-            if channel == 1:
+            if number == 1:
                 self._setup = 1
                 self._positive_pin = 1  # AIN1
                 # self._enabled = False
                 self._enabled = True
-            elif channel == 2:
+            elif number == 2:
                 self._setup = 2
                 self._positive_pin = 2  # AIN2
                 # self._enabled = False
                 self._enabled = True
-            elif channel == 15:
+            elif number == 15:
                 self._setup = 7  # Use default setup
                 self._positive_pin = 0b1000  # Temperature
                 self._negative_pin = 0b1000  # Temperature
@@ -50,8 +51,8 @@ class AD7124Channel:
             raise ValueError("channel " + str(channel) + " out of range")
 
     @property
-    def channel(self):
-        return self._channel
+    def number(self):
+        return self._number
 
     def set(self, pi, spi):
         """ Write the internal values to the various ADC registers. """
@@ -67,9 +68,20 @@ class AD7124Channel:
         value |= (enabled << 15)  # bit 15
         # Set channel register.
         register_enum = AD7124RegNames(
-                AD7124RegNames.CH0_MAP_REG.value + self._channel)
+                AD7124RegNames.CH0_MAP_REG.value + self._number)
         # print("channel.write: enum:", register_enum, "value:", bin(value))
         spi.write_register(pi, register_enum, value)
+
+    def get(self, pi, spi):
+        """ Gets the value of the channel control register.
+        Returns integer.
+        """
+        # Set channel register.
+        register_enum = AD7124RegNames(
+                AD7124RegNames.CH0_MAP_REG.value + self._number)
+        # Read the register.
+        result = self._spi.read_register(self._pi, register_enum)
+        return result
 
     def read(self, pi, spi):
         """ Return the voltage of the channel after scaling. """

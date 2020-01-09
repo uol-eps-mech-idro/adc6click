@@ -48,7 +48,7 @@ class AD7124Driver:
             self._channels[i] = channel
         for i in range(0, 8):
             setup = AD7124Setup(i)
-            # TODO setup.set(self._pi, self._spi)
+            setup.set(self._pi, self._spi)
             self._setups.append(setup)
         self._set_diagnostics()
         clock_select = 0  # Internal clock.
@@ -69,11 +69,11 @@ class AD7124Driver:
     def read(self, channel_num):
         """ Reads one value from the given channel."""
         voltage = 0.0
-        if channel_num < 0 or channel_num > 15:
-            raise ValueError("Channel number out of range")
-        else:
+        if 0 <= channel_num <=15:
             channel = self._channels[channel_num]
             voltage = channel.read(self._pi, self._spi)
+        else:
+            raise ValueError("Channel number out of range")
         return voltage
 
     def _set_diagnostics(self):
@@ -90,13 +90,13 @@ class AD7124Driver:
         value = 0
         # The control register is 16 bits, MSB first.
         if cont_read:
-            value |= (1 << 11)
+            value |= 0x0800
         if data_status:
-            value |= (1 << 10)
+            value |= 0x0400
         if not_cs_en:
-            value |= (1 << 9)
+            value |= 0x0200
         if ref_en:
-            value |= (1 << 8)
+            value |= 0x0100
         value |= ((power_mode & 0x03) << 6)
         value |= ((mode & 0x0f) << 2)
         value |= (clock_select & 0x03)

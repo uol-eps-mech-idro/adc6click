@@ -20,6 +20,7 @@ class Voltmeter:
         self._csv = False
         self._filename = ""
         self._stdout = False
+        # List of ints, one per channel.
         self._channels = []
         self._position = 1
         self._adc = AD7124Driver()
@@ -43,12 +44,19 @@ class Voltmeter:
                           help="Position of the ADC6Click: 1 or 2.  Default is '%default'.")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose")
-        (options, self._channels) = parser.parse_args()
-        # print("print options", options, "channels", self._channels)
-        num_channels = len(self._channels)
+        (options, channels) = parser.parse_args()
+        # print("print options", options, "channels", channels)
+        num_channels = len(channels)
         # print("print num_channels", num_channels)
         if num_channels not in (1, 2):
             parser.error("must have at least one channel.")
+        else:
+            for channel in channels:
+                channel_num = int(channel)
+                if 0 <= channel_num <= 15:
+                    self._channels.append(channel_num)
+                else:
+                    parser.error("channel number out of range. 0 to 15 only.")
         if options.position in (1, 2):
             self._position = options.position
         else:
@@ -71,9 +79,10 @@ class Voltmeter:
         self._adc.init(self._position)
         try:
             while True:
-                for channel in channels:
-                    value = self._adc.read(channel)
-                    self._write_value(channel, value)
+                for channel in self._channels:
+                    channel_number = int(channel)
+                    value = self._adc.read(channel_number)
+                    self._write_value(channel_number, value)
                 time.sleep(0.010)
         except KeyboardInterrupt:
             print("\nStopping...")
@@ -87,13 +96,13 @@ class Voltmeter:
             # TODO Open file
             print("Open CSV file")
 
-    def _write_value(self, value):
+    def _write_value(self, channel_number, value):
         if self._stdout:
             # TODO Needs better formatting
-            print(timestamp, channel, value)
+            print(timestamp, channel_number, value)
         if self._csv:
             # TODO Needs better formatting
-            print("Write to CSV", channel, value)
+            print("Write to CSV", channel_number, value)
 
     def _write_footer(self):
         print("Footer")
