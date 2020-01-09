@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" AD7124 command line utility.
+""" Voltmeter command line utility.
 This file uses the AD7124Driver class to set up and control the AD7124 device.
 """
 
@@ -8,10 +8,10 @@ from optparse import OptionParser
 from ad7124driver import AD7124Driver
 
 
-class AD7124:
-    """ Handles user options.
+class Voltmeter:
+    """ Handles user options to control the "Voltmeter".
     Calls AD7124Driver to setup and read values.
-    Outputs the values in the reqquested format.
+    Outputs the values in the requested format.
     """
 
     VERSION = "0.1"
@@ -44,9 +44,9 @@ class AD7124:
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose")
         (options, self._channels) = parser.parse_args()
-        print("print options", options, "channels", self._channels)
+        # print("print options", options, "channels", self._channels)
         num_channels = len(self._channels)
-        print("print num_channels", num_channels)
+        # print("print num_channels", num_channels)
         if num_channels not in (1, 2):
             parser.error("must have at least one channel.")
         if options.position in (1, 2):
@@ -64,16 +64,16 @@ class AD7124:
 
     def run(self):
         """ This function continuously reads the ADC selected channels until
-        the user presses Ctrl+c.
+        the user presses ctrl+c.
         """
         print("Starting...")
         self._write_header()
         self._adc.init(self._position)
         try:
             while True:
-                values_list = self._adc.read()
-                for values in values_list:
-                    self._write_values(values)
+                for channel in channels:
+                    value = self._adc.read(channel)
+                    self._write_value(channel, value)
                 time.sleep(0.010)
         except KeyboardInterrupt:
             print("\nStopping...")
@@ -87,13 +87,13 @@ class AD7124:
             # TODO Open file
             print("Open CSV file")
 
-    def _write_values(self, values):
+    def _write_value(self, value):
         if self._stdout:
             # TODO Needs better formatting
-            print(timestamp, values)
+            print(timestamp, channel, value)
         if self._csv:
             # TODO Needs better formatting
-            print("Write to CSV", values)
+            print("Write to CSV", channel, value)
 
     def _write_footer(self):
         print("Footer")
@@ -104,9 +104,9 @@ class AD7124:
 
 def run():
     print("Started.")
-    ad7124 = AD7124()
-    ad7124.parse_options()
-    ad7124.run()
+    voltmeter = Voltmeter()
+    voltmeter.parse_options()
+    voltmeter.run()
     print("Finished.")
 
 

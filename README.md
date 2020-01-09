@@ -1,22 +1,23 @@
 # ADC6Click
 
-This project implements a Python 3 driver for the MikroElectronica ADC 6 Click 
+This project implements a Python 3 driver for the MikroElectronica ADC 6 Click
 board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
-1. Configure ADC for read
-Sends correct values to channel and setup registers.
+1. Workout what the values from the data register mean and how to make them into something sensible.
 
 ## DONE
 1. Read the ID register.
-
-
+1. Read the status register.
+1. Read the data register.
+1. Implemented unit tests.
+1. Implemented top level application.
 
 ## Concepts
 The AD7124 has the following key concepts.
 
 * SPI communications are mode 3.
-* All communications begin by writing one byte to the communications 
+* All communications begin by writing one byte to the communications
 register.
 * The ID register is used to verify the device type.
 * There are 16 channels that can use any one of 8 setups.
@@ -44,18 +45,18 @@ mikroBUS™ socket and the Pi2 click shield.
 
 NOTES
 
-1. Only pins 1 to 8 of the mikroBus are used, the others are all not 
+1. Only pins 1 to 8 of the mikroBus are used, the others are all not
 connected so are not shown.
-1. The Pi2 click shield has two positions for the ADC.  Most connections 
-to the Raspberry Pi are shared but 3 are not.  Where there are two 
+1. The Pi2 click shield has two positions for the ADC.  Most connections
+to the Raspberry Pi are shared but 3 are not.  Where there are two
 entries for a mikroBus pin, the top one is position 1.
-1. Max SPI speed is limited by the SCK high and low pulse times, 100ns 
+1. Max SPI speed is limited by the SCK high and low pulse times, 100ns
 for each (datasheet t3 and t4 times), so 200ns per cycle = 5MHz.
 
-## Development 
+## Development
 
 I started out trying to use the spidev Python package but it is poorly
-documented and does not do what I expected it to do.  So I tried the Analog 
+documented and does not do what I expected it to do.  So I tried the Analog
 Devices C driver example.
 
 ### Analog Devices Source Code
@@ -65,27 +66,71 @@ https://wiki.analog.com/resources/tools-software/uc-drivers/ad7124
 Source code from here:
 https://github.com/analogdevicesinc/no-OS/tree/master/drivers/adc/ad7124
 
-Added this code to the repo.  Needed SPI and GPIO so found the 
+Added this code to the repo.  Needed SPI and GPIO so found the
 platform_drivers.c/h files and wrote a test program to drive it.  It worked
-apart from the resulting app has SCLK and CE0 swapped.  Tried to figoue out how 
-to fix this but it started getting deeply into Linux device trees, so I gave up 
+apart from the resulting app has SCLK and CE0 swapped.  Tried to figure out how
+to fix this but it started getting deeply into Linux device trees, so I gave up
 and tried PiGPIO instead.
 
 ### PiGPIO
-Copied my test code over from the nRF905Py driver and hacked it to verify the 
+
+Copied my test code over from the nRF905Py driver and hacked it to verify the
 mode of operation.  Initially, tried to read the Id register as this was
-recommended in the docs.  No response.  Tried to read an ADC register and it 
+recommended in the docs.  No response.  Tried to read an ADC register and it
 came back with numbers.  Figured out that I wasn't setting a read bit when I was
 trying to read the ID.  Fixed the code and it works.
 
-This works for me so using this for the rest of the project. 
+This works for me so using this for the rest of the project.
 
+### ADC development
 
+Once I could talk to the ADC, setting it up to read values was more tricky than
+I expected.  It took a good while to get values from the ADC and when I did they
+were not what I expected.  These are some of the readings (unittest.sh does a
+single ADC data register read):
+
+Input   Value (hex)
++0.121  0x0
+-0.035  0x0
+-0.200  0x0
+-0.210  0x0
+-0.220  0x0
+-0.230  0x6c5c91
+-0.241  0x7614bc
+-0.250  0x76ecd9
+-0.261  0x77d3eb
+-0.273  0x78aa49
+-0.282  0x7927b7
+-0.291  0x799128
+-0.301  0x79cc63
+-0.310  0x79ca28
+-0.321  0x79af8a
+-0.330  0x797390
+-0.351  0x7827fa
+-0.362  0x75f1d5
+-0.373  0x6aeaad
+-0.381  0x774f37
+-0.401  0x0
+-0.491  0x0
+
+Also the values are not the same if read repeatedly, e.g. for -0.381V:
+0x7607f5
+0x73c14c
+0x774b26
+0x772d8d
+0x7093bb
+0x769994
+
+There is quite a big change in the readings.  WHY!!!!!
 
 ### AD7124
 
-This device has many features and is very configurable.  This makes it 
-"interesting" to program. 
+This device has many features and is very configurable.  This makes it
+"interesting" to program.
+
+Wrote voltmeter.py to provide basic user interface to the AD7124 class.
+
+
 
 #### Phase 1
 
@@ -94,14 +139,14 @@ ranges:
     +/-7V - pendulum tribometer from the charge amplifiers.
     0 to 9V - TODO get name.
 
-So the plan is to create two inputs, one for the +/-7V and the other for the 
+So the plan is to create two inputs, one for the +/-7V and the other for the
 0 to 9V measurements.  There will be scaling applied at the inputs in the form
-of a fixed potential divider network to scale the input voltages to a range 
-that the ADC can use. 
+of a fixed potential divider network to scale the input voltages to a range
+that the ADC can use.
 
-So what needs to be done is to configure two channels, each connected to 
-its own input pin and using its own setup.  Then we need to be able to start 
-and stop the continuous reading of both channels.  
+So what needs to be done is to configure two channels, each connected to
+its own input pin and using its own setup.  Then we need to be able to start
+and stop the continuous reading of both channels.
 
 The frequency of reading each channel should be adjustable so that trade offs
 can be experimented with.
@@ -110,21 +155,21 @@ The following shall be fixed in software:
  power mode - full
  input pin to channel and setup and all related registers.
 
-The users will use a command line program to control the ADC. It will have the 
+The users will use a command line program to control the ADC. It will have the
 following features and options:
 
-ad7124 \[options\] 
+ad7124 \[options\]
 -h  --help          Display usage and all options.
 -s  --sample-rate   Sample rate: whatever the ADC can do.
 -o  --output-file   Write output to CSV file instead of stdout.
 
 #### Phase 2
 
-There are requirements to monitor the following: 
+There are requirements to monitor the following:
  - monitoring speed using rotary encoders (digital input).
  - monitoring temperatures using thermocouples.
 
-The AD7124 can be used for all sorts of things from digital IO and even using 
+The AD7124 can be used for all sorts of things from digital IO and even using
 thermocouples so can probably be used for some or all of the above.
 
 ## Voltage converter
@@ -133,6 +178,9 @@ https://bestengineeringprojects.com/9v-dc-to-plusminus-5v-dc-converter/
 https://www.nutsvolts.com/magazine/article/dc-voltage-converter-circuits
 Figures 9, 11, 12 (best).
 Alternatively use two USB plugtops, one to power the RPi as usual.  The other
-is used with voltage regulators to provide two lots of 1.25V. 
+is used with voltage regulators to provide two lots of 1.25V.
 
 
+## References
+https://github.com/analogdevicesinc/arduino/tree/master/Arduino%20Uno%20R3/examples/CN0391_example
+https://github.com/epsilonrt/ad7124

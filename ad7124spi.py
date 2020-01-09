@@ -28,7 +28,7 @@ class AD7124SPI:
         position is the Pi2 click shield position number, 1 or 2.
         Throws an exception if it fails.
         """
-        # print("init")
+        print("\ninit: baud rate:", self.AD7124_SPI_BAUD_RATE)
         # The Pi2 click shield only supports main bus, bit 8 = 0.
         spi_flags = 0
         # Set to mode 3
@@ -73,6 +73,7 @@ class AD7124SPI:
         command = self._build_command(AD7124RegNames.ID_REG, True)
         to_send.append(command)
         to_send.append(0)
+        # print("read_id command", hex(to_send[0]))
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
         # print("read_id", count, data)
         # Value is in second byte.
@@ -90,6 +91,7 @@ class AD7124SPI:
         if read:
             command += (1 << 6)
         command += (register_enum.value & 0x3f)
+        # print("_build_command", hex(command))
         return command
 
     def write_register(self, pi, register_enum, value):
@@ -122,7 +124,7 @@ class AD7124SPI:
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
         (count, data) = pi.spi_xfer(self._spi_handle, to_send)
-        # print("read_register: count", count, "data", data)
+        print("read_register: count", count, "data", data)
         value = 0
         if count == size + 1:
             # Remove first byte as always 0xFF
@@ -130,5 +132,6 @@ class AD7124SPI:
             for byte_value in data:
                 value = value << 8
                 value |= byte_value
-        #print("read_register: value", hex(value))
+        print("read_register: value", hex(value))
         return value
+

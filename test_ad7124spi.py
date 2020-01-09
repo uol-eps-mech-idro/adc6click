@@ -41,7 +41,7 @@ class TestAD7214Spi(unittest.TestCase):
         new_value |= (0b10011)  # 4:0 AINM = DGND.
         self._spi.write_register(self._pi, register, new_value)
         value = self._spi.read_register(self._pi, register)
-        print("trw:", new_value, value)
+        print("trw:", hex(new_value), hex(value))
         self.assertEqual(new_value, value)
 
 

@@ -54,7 +54,7 @@ def test_spi():
     baud = 50 * 1000
     # spi_channel values: 0 is CE0 (GPIO8), 1 is CE1.
     spi_channel = 0
-    # Test all 4 modes 
+    # Test all 4 modes
     for mode in range(0, 4):
         # Synchronise is 4 master clock cycles at 614.4kHz, or 6.5uS.
         pi.write(sync, 0)
@@ -79,6 +79,50 @@ def test_spi():
         # Close the spi bus
         pi.spi_close(spi_h)
 
+def test_ad7124_read():
+    print("test_spi")
+    sync = 5
+    pi.set_mode(sync, pigpio.OUTPUT)
+    pi.write(sync, 1)
+    baud = 50 * 1000
+    spi_channel = 0
+    spi_flags = 3
+    pi.write(sync, 0)
+    time.sleep(0.0001)
+    pi.write(sync, 1)
+    # Open SPI device
+    spi_h = pi.spi_open(spi_channel, baud, spi_flags)
+    data = b'\x45\x00'
+    data_read = pi.spi_xfer(spi_h, data)
+    print("id = 0x14", data_read)
+    # Set channel 15 to read temperature. Use setup 7.
+    # FIXME
+    data = b'\x01\x04\xC0'
+    data_read = pi.spi_xfer(spi_h, data)
+    print("channel", data_read)
+    # Set setup. Leave as default
+    #data = b'\x01\x00\x04'
+    #data_read = pi.spi_xfer(spi_h, data)
+    # print("setup", data_read)
+    # Set diagnostics to 0x000040
+    # ERREN_REG = 0x07
+    data = b'\x07\x00\x00\x40'
+    data_read = pi.spi_xfer(spi_h, data)
+    print("diagnostics", data_read)
+    # Set control reg
+    data = b'\x01\x04\xC0'
+    data_read = pi.spi_xfer(spi_h, data)
+    print("control reg", data_read)
+    # Read 100 times
+    for _ in range(0, 10):
+        data = b'\x42\x00\x00\x00'
+        data_read = pi.spi_xfer(spi_h, data)
+        print("read data", data_read)
+        # Wait for conversion - fastest is @ 19200Hz or 52uS.
+        # 100uS is fine.
+        time.sleep(0.0001)
+    # Tidy up
+    pi.spi_close(spi_h)
 
 def test_read():
     print("test_read. Polling GPIO18...")
@@ -113,7 +157,8 @@ pi = pigpio.pi()
 
 if pi.connected:
     #test_gpios()
-    test_spi()
+    # test_spi()
+    test_ad7124_read()
     #test_read()
     #test_callback()
     print("Tests finished.")
