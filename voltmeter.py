@@ -67,8 +67,6 @@ class Voltmeter:
                 self._csv = True
                 self._filename = options.filename
                 self._stdout = False
-            elif output_format == "console":
-                self._stdout = True
 
     def run(self):
         """ This function continuously reads the ADC selected channels until
@@ -83,7 +81,8 @@ class Voltmeter:
                     channel_number = int(channel)
                     value = self._adc.read(channel_number)
                     self._write_value(channel_number, value)
-                time.sleep(0.010)
+                # HACK
+                time.sleep(1.0)
         except KeyboardInterrupt:
             print("\nStopping...")
         finally:
@@ -91,7 +90,7 @@ class Voltmeter:
             self._write_footer()
 
     def _write_header(self):
-        print("Starting capture on channels", self._channels)
+        print("Starting using channels:", self._channels)
         if self._csv:
             # TODO Open file
             print("Open CSV file")
@@ -99,24 +98,22 @@ class Voltmeter:
     def _write_value(self, channel_number, value):
         if self._stdout:
             # TODO Needs better formatting
-            print(timestamp, channel_number, value)
+            print("Channel: ", channel_number, "Value:", value)
         if self._csv:
             # TODO Needs better formatting
             print("Write to CSV", channel_number, value)
 
     def _write_footer(self):
-        print("Footer")
+        print("Finished.")
         if self._csv:
             # TODO Close file
             print("Close CSV file")
 
 
 def run():
-    print("Started.")
     voltmeter = Voltmeter()
     voltmeter.parse_options()
     voltmeter.run()
-    print("Finished.")
 
 
 if __name__ == '__main__':

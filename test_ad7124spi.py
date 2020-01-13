@@ -27,9 +27,19 @@ class TestAD7214Spi(unittest.TestCase):
         value = self._spi.read_register(self._pi, AD7124RegNames.CH0_MAP_REG)
         self.assertEqual(0x8001, value)
 
+    def test_read_register_status(self):
+        """ Read the CH0 register with status.
+        Should be 0x8001 and 0xff.
+        """
+        result = self._spi.read_register_status(self._pi,
+                                                AD7124RegNames.CH0_MAP_REG)
+        self.assertEqual(0x8001, result[0])
+        self.assertEqual(0xff, result[1])
+
     def test_write_register(self):
-        """ Read the CH0 register.  Should be 0x8001.
-        Then write a new vale that changes both bytes.
+        """ Read, modify and read the CH0 register.
+        Read the CH0 register.  Should be 0x8001.
+        Then write a new value that changes both bytes.
         Read back to verify change has occurred.
         """
         register = AD7124RegNames.CH0_MAP_REG

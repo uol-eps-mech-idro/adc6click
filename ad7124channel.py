@@ -15,40 +15,26 @@ class AD7124Channel:
     defaults that do what is generally needed.
     """
 
-    def __init__(self, number):
-        """ Set default values for the given channel number.
-        Channel 1 uses pin 1 and setup 1.
-        Channel 2 uses pin 2 and setup 2.
-        Channel 15 is the internal temperature sensor.
-        TODO Add parameters?
+    def __init__(self, number, pin, setup_num, scale, unipolar=False, bipolar=False,
+                 temperature=False):
+        """ Set values for the given channel number.
+        Note: only single pin inputs are used.
         """
-        # Defaults to do nothing
+        if not 0 <= number <= 15:
+            raise ValueError("channel number" + str(number) + " out of range")
         self._number = number
-        self._setup = 0
-        self._positive_pin = 0b1001  # Ground
+        if not 0 <= setup_num <= 7:
+            raise ValueError("channel setup" + str(setup) + " out of range")
+        self._setup_num = setup_num
+        if not 0 <= pin <= 15:
+            raise ValueError("channel pin" + str(number) + " out of range")
+        self._positive_pin = pin
         self._negative_pin = 0b1001  # Ground
-        self._enabled = False
-        self._scale = 1.0
-        if 0 <= number <= 15:
-            # Configure each channel here.
-            if number == 1:
-                self._setup = 1
-                self._positive_pin = 1  # AIN1
-                # self._enabled = False
-                self._enabled = True
-            elif number == 2:
-                self._setup = 2
-                self._positive_pin = 2  # AIN2
-                # self._enabled = False
-                self._enabled = True
-            elif number == 15:
-                self._setup = 7  # Use default setup
-                self._positive_pin = 0b1000  # Temperature
-                self._negative_pin = 0b1000  # Temperature
-                self._enabled = True
-                self._scale = 0.0
-        else:
-            raise ValueError("channel " + str(channel) + " out of range")
+        self._enabled = True
+        self._scale = scale
+        self._unipolar = unipolar
+        self._bipolar = bipolar
+        self._temperature = temperature
 
     @property
     def number(self):
@@ -62,7 +48,7 @@ class AD7124Channel:
         value |= ainm  # bits 4:0
         ainp = self._positive_pin & 0x1f
         value |= (ainp << 5)  # bits 9:5
-        setup = self._setup & 0x07
+        setup = self._setup_num & 0x07
         value |= (setup << 12)  # bits 14:12
         enabled = self._enabled & 0x01
         value |= (enabled << 15)  # bit 15
@@ -83,21 +69,46 @@ class AD7124Channel:
         result = self._spi.read_register(self._pi, register_enum)
         return result
 
+    def _to_bipolar_volts(self, int_value):
+        volts = 0.0
+        int_value -= 0x800000
+        volts = int_value * self._scale
+        # print("channel.read: V", hex(int_value), value)
+        return volts
+
+    def _to_unipolar_volts(self, int_value):
+        volts = 0.0
+        volts = int_value * self._scale
+        # print("channel.read: V", hex(int_value), value)
+        return volts
+
+    def _to_temperature(self, int_value):
+        """ Convert ADC value to temperature in degrees Celcius.
+        """
+        temperature_c = 0.0
+        int_value -= 0x800000
+        # print("channel.read: B", hex(int_value))
+        temperature_c = float(int_value)
+        temperature_c /= 13584
+        # print("channel.read: C", value)
+        temperature_c -= 272.5
+        # print("channel.read: D", value)
+        return temperature_c
+
     def read(self, pi, spi):
-        """ Return the voltage of the channel after scaling. """
+        """ Return the voltage/temperature after scaling. """
         value = 0.0
-        int_value = spi.read_register(pi, AD7124RegNames.DATA_REG)
-        # print("channel.read: A", hex(int_value))
-        if self._scale == 0.0:
-            int_value -= 0x800000
-            # print("channel.read: B", hex(int_value))
-            value = float(int_value)
-            value /= 13584
-            # print("channel.read: C", value)
-            value -= 272.5
-            # print("channel.read: D", value)
-        else:
-            value = int_value * self._scale
-            # print("channel.read: V", int_value, value)
+        result = spi.read_register_status(pi, AD7124RegNames.DATA_REG)
+        int_value = result[0]
+        status = result[1]
+        channel = status & 0x0f
+        print("channel.read: result", result, "status", hex(status),
+              "channel", channel)
+        if self._unipolar:
+            value = self._to_bipolar_volts(int_value)
+        elif self._bipolar:
+            value = self._to_unipolar_volts(int_value)
+        elif self._temperature:
+            value = self._to_temperature(int_value)
         return value
 

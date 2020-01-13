@@ -4,7 +4,7 @@ This project implements a Python 3 driver for the MikroElectronica ADC 6 Click
 board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
-1. Workout what the values from the data register mean and how to make them into something sensible.
+1. Work out what the values from the data register mean and how to make them into something sensible.
 
 ## DONE
 1. Read the ID register.

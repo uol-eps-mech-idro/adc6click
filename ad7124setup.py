@@ -45,6 +45,10 @@ class ConfigurationRegister:
             # Bipolar, use internal ref. voltage 0b10
             # All buffer bits set, PGA = 0 (gain of 1)
             self._value = 0x09f0
+        elif index == 2:
+            # Unipolar, use internal ref. voltage 0b10
+            # All buffer bits set, PGA = 0 (gain of 1)
+            self._value = 0x01f0
 
     def set(self, pi, spi):
         register_index = AD7124RegNames.CFG0_REG.value + self._index

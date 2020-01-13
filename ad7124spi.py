@@ -13,8 +13,8 @@ class AD7124SPI:
     """
     # Values for SPI communications.  All other values are default.
     # Max SPI baud rate is 5MHz.
-    # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
-    AD7124_SPI_BAUD_RATE = 32 * 1000
+    AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
+    # AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b00  # Mode 3
 
     def __init__(self):
@@ -45,7 +45,7 @@ class AD7124SPI:
         self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE,
                                        spi_flags)
         # print("init 2")
-        self._reset(pi)
+        self.reset(pi)
         # Check correct device is present.
         ad7124_id = self._read_id(pi)
         # print("init id", ad7124_id)
@@ -57,7 +57,7 @@ class AD7124SPI:
         # print("term: pi", pi)
         pi.spi_close(self._spi_handle)
 
-    def _reset(self, pi):
+    def reset(self, pi):
         """ Resets the AD7124 to power up conditions. """
         to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
         # print("reset command", to_send)
@@ -111,8 +111,9 @@ class AD7124SPI:
         # Write the data.
         pi.spi_xfer(self._spi_handle, to_send)
 
-    def read_register(self, pi, register_enum):
-        """ Returns the value read from the register as a list of int values.
+    def _read_register(self, pi, register_enum, status_byte):
+        """ Returns the value read from the register as a tuple of:
+        count and a list of bytes.
         """
         to_send = []
         command = self._build_command(register_enum, True)
@@ -120,18 +121,41 @@ class AD7124SPI:
         # Send correct number of padding bytes to get result.
         size = self._registers.size(register_enum)
         num_bytes = self._registers.size(register_enum)
+        if status_byte:
+            num_bytes += 1
         value = 0
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
-        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
-        print("read_register: count", count, "data", data)
-        value = 0
-        if count == size + 1:
-            # Remove first byte as always 0xFF
-            data = data[1:]
-            for byte_value in data:
-                value <<= 8
-                value |= byte_value
-        print("read_register: value", hex(value))
+        result = pi.spi_xfer(self._spi_handle, to_send)
+        # print("_read_register: count", result[0], "data", result[1])
+        return result
+
+    def _data_to_int(_, data):
+        int_value = 0
+        # Remove first byte as always 0xFF
+        data = data[1:]
+        for byte_value in data:
+            int_value <<= 8
+            int_value |= byte_value
+        return int_value
+
+    def read_register(self, pi, register_enum):
+        """ Returns the value read from the register as an int value.
+        """
+        result = self._read_register(pi, register_enum, False)
+        value = self._data_to_int(result[1])
+        # print("read_register: value", hex(value))
         return value
 
+    def read_register_status(self, pi, register_enum):
+        """ Returns a tuple of the value read from the register as an int value
+        and the value of the status register.
+        """
+        result = self._read_register(pi, register_enum, True)
+        # Get status byte from end of data.
+        data = result[1]
+        status = data.pop()
+        value = self._data_to_int(data)
+        # print("read_register_status: value:", hex(value),
+        #       "status: ", hex(status))
+        return (value, status)

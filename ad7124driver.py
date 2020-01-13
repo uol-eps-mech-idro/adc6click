@@ -11,6 +11,8 @@ Before running this script, the pigpio daemon must be running.
 
 """
 import time
+from threading import Thread
+from threading import Thread
 import pigpio
 from ad7124spi import AD7124SPI
 from ad7124channel import AD7124Channel
@@ -29,6 +31,8 @@ class AD7124Driver:
         self._spi = AD7124SPI()
         self._setups = []
         self._channels = {}
+        self._read_thread = None
+        self._read_thread_running = False
 
     def init(self, position):
         """ Initialises the AD7124.
@@ -42,22 +46,31 @@ class AD7124Driver:
         self._spi.init(self._pi, position)
         # This follows the recommended order in the datasheet:
         # channel, setup, diagonostics, control register.
-        for i in range(0, 16):
-            channel = AD7124Channel(i)
-            channel.set(self._pi, self._spi)
-            self._channels[i] = channel
+        # Channel 1: pin AIN1, setup 1, scale 1.0, unipolar
+        channel = AD7124Channel(1, 1, 1, 1.0, unipolar=True)
+        channel.set(self._pi, self._spi)
+        self._channels[1] = channel
+        # Channel 2: pin AIN2, setup 2, scale 1.0, bipolar
+        channel = AD7124Channel(2, 2, 2, 1.0, bipolar=True)
+        channel.set(self._pi, self._spi)
+        self._channels[2] = channel
+        # Channel 15: pin AIN15, setup 7, scale 1.0, temperature
+        channel = AD7124Channel(15, 2, 2, 1.0, temperature=True)
+        channel.set(self._pi, self._spi)
+        self._channels[15] = channel
+        # Ranges: TODO setup properly.
         for i in range(0, 8):
             setup = AD7124Setup(i)
             setup.set(self._pi, self._spi)
             self._setups.append(setup)
         self._set_diagnostics()
         clock_select = 0  # Internal clock.
-        mode = 0  # Continuous conversion.
+        mode = 0  # Continuous conversion = 0.
         power_mode = 3  # Full power mode.
-        ref_en = 1  # Enable internal reference voltage.
-        not_cs_en = 0
-        data_status = 0  # Enable status byte for all replies.
-        cont_read = 0
+        ref_en = True  # Enable internal reference voltage.
+        not_cs_en = False
+        data_status = True  # Enable status byte for all replies.
+        cont_read = False
         self._set_control_register(clock_select, mode, power_mode,
                                    ref_en, not_cs_en, data_status, cont_read)
 
@@ -128,23 +141,30 @@ class AD7124Driver:
         active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
 
+    def _wait_for_data_ready(self):
+        """ Blocks until DOUT/!RDY goes low (RDY). """
+        # TODO
+        if True:
+            ready = False
+            for _ in range(0,300):
+                status = self._read_status()
+                ready = status[0]
+                if ready:
+                    break
+        else:
+            pass
+
     def read_data_wait(self):
         """ Reads the data register.  Blocks until data is ready.
         """
-        ready = False
-        for _ in range(0,300):
-            status = self._read_status()
-            ready = status[0]
-            if ready:
-                break
-        value = self._spi.read_register(self._pi, AD7124RegNames.DATA_REG)
-        print("read_data_wait:", value)
+        self._wait_for_data_ready()
+        value = self._spi.read_register_status(self._pi, AD7124RegNames.DATA_REG)
+        print("read_data_wait:", hex(value[0]), hex(value[1]))
         return value
 
     def read_one_conversion(self):
         """ Requests conversion on pin AIN1.
-        Reads the data register.
-        Blocks until data is ready.
+        Blocks until data is ready and then reads the data register.
         """
         # Control register is set to high power mode, continuous conversion
         # by init().
@@ -162,12 +182,42 @@ class AD7124Driver:
         return value
 
     def start_continuous_read(self):
-        """ TODO """
-        result = True
-        return result
+        """ Starts a thread that reads the data register continuously.
+        The ADC continuous read mode is enabled.
+        Results are placed the queue associated with each channel so they can
+        be read asynchronously.
+        """
+        self._read_thread_running = True
+        self._read_thread = Thread(target = self._read_continuously)
+        self._read_thread.start()
+
+    def _read_continuously(self):
+        """ """
+        print("_read_continuously started...")
+        # Enable continuous read mode.  Set the CONT_READ bit.
+        value = self._spi.read_register(self._pi, AD7124RegNames.ADC_CTRL_REG)
+        value |= 0x0800
+        self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
+        # Repeat until told to quit
+        while self._read_thread_running:
+            # Wait for read
+            value, status = self.read_data_wait()
+            channel_num = status & 0x0f
+            print("thread read cont: channel:", channel_num, "value:", value)
+            # Post value to queue
+            # channel = self._channels[channel_num]
+            # channel.post(value)
+            # FIXME: Would be better to wait for !RDY interrupt.
+            time.sleep(0.01)
+        # Reset ADC to
+        self._spi.reset(self._pi)
+        print("_read_continuously finished.")
 
     def stop_continuous_read(self):
-        """ TODO """
+        """ Kills the thread. """
         result = True
+        # Tell thread to stop
+        self._read_thread_running = False
+        # Wait for thread to join.
+        self._read_thread.join()
         return result
-

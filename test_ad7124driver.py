@@ -24,14 +24,17 @@ class TestAD7214Driver(unittest.TestCase):
         """ Read a single value from a channel 1.
         The ADC should be set up to read from channel 1 and 2.
         """
-        value = self.ad7124.read(1)
-        print("tr: value ", value)
+        for _ in range(0, 200):
+            time.sleep(0.01)
+            value = self.ad7124.read(1)
+            print("tr: value ", value)
 
     def test_read_temperature(self):
         """ Read the temperature of the ADC.
         """
         for _ in range(0, 20):
             time.sleep(0.1)
+            # 15 is the channel for the temperature.
             value = self.ad7124.read(15)
             print("tr: temp C", value)
 
@@ -66,32 +69,14 @@ class TestAD7214Driver(unittest.TestCase):
             value = self.ad7124.read_data_wait()
             time.sleep(1)
 
-#    @unittest.expectedFailure
-#    def test_start_continuous_read(self):
-#        # assign callback
-#        callback_reset()
-#        result = self.ad7124.start_continuous_read(callback)
-#        self.assertTrue(result)
-#        # sleep for time for callback to happen.
-#        time.sleep(0.1)
-#        # Verify callback variable has been incremented at lest once.
-#       callback_count = callback_get()
-#       self.assertGreat(callback_count, 0)
-
-#    @unittest.expectedFailure
-#    def test_stop_continuous_read(self):
-#        # Stop the read.
-#        result = self.ad7124.stop_continuous_read(callback)
-#        self.assertTrue(result)
-#        # Wait for time to ensure that callbacks stop.
-#        time.sleep(0.1)
-#        # Reset variable.
-#        callback_reset()
-#        # Wait for time
-#        time.sleep(0.1)
-#        # Verify that variable has not been changed.
-#        callback_count = callback_get()
-#        self.assertEqual(callback_count, 0)
+    def test_start_continuous_read(self):
+        # Start
+        self.ad7124.start_continuous_read()
+        # Wait for a few results to happen.
+        time.sleep(5)
+        # Stop
+        result = self.ad7124.stop_continuous_read()
+        self.assertTrue(result)
 
 
 if __name__ == '__main__':
