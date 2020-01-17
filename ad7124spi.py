@@ -64,6 +64,11 @@ class AD7124SPI:
         pi.spi_xfer(self._spi_handle, to_send)
         # TODO WAIT UNTIL PROPERLY READY
         time.sleep(0.001)
+        # Disable Channel 0 (enabled by default after reset).
+        # 0x0001 is defautl for the other channel registers.
+        value = 0x0001
+        register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value)
+        self.write_register(pi, register_enum, value)
 
     def _read_id(self, pi):
         """ The value of the ID register is returned. """

@@ -5,6 +5,7 @@ board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
 1. Work out what the values from the data register mean and how to make them into something sensible.
+HERE Posting data to queue.
 
 ## DONE
 1. Read the ID register.
@@ -129,7 +130,7 @@ This device has many features and is very configurable.  This makes it
 "interesting" to program.
 
 Wrote voltmeter.py to provide basic user interface to the AD7124 class.
-
+Using this to develop the continuous read.
 
 
 #### Phase 1
@@ -137,7 +138,7 @@ Wrote voltmeter.py to provide basic user interface to the AD7124 class.
 For the first phase of implementation, we need to measure the following voltage
 ranges:
     +/-7V - pendulum tribometer from the charge amplifiers.
-    0 to 9V - TODO get name.
+    0 to 9V - TODO get name. Blue machine!
 
 So the plan is to create two inputs, one for the +/-7V and the other for the
 0 to 9V measurements.  There will be scaling applied at the inputs in the form
@@ -158,7 +159,7 @@ The following shall be fixed in software:
 The users will use a command line program to control the ADC. It will have the
 following features and options:
 
-ad7124 \[options\]
+voltmeter \[options\]
 -h  --help          Display usage and all options.
 -s  --sample-rate   Sample rate: whatever the ADC can do.
 -o  --output-file   Write output to CSV file instead of stdout.

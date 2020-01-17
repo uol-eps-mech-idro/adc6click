@@ -1,6 +1,7 @@
 """ Implements a channel class for the AD7124 driver.
 """
 
+import queue
 from ad7124setup import AD7124Setup
 from ad7124spi import AD7124SPI
 from ad7124registers import AD7124RegNames
@@ -35,6 +36,7 @@ class AD7124Channel:
         self._unipolar = unipolar
         self._bipolar = bipolar
         self._temperature = temperature
+        self._queue = queue.SimpleQueue()
 
     @property
     def number(self):
@@ -112,3 +114,17 @@ class AD7124Channel:
             value = self._to_temperature(int_value)
         return value
 
+    def post(self, time_now, value):
+        """ Adds a timestamp and value tuple to the queue. """
+        item = (time_now, value)
+        self._queue.put(item)
+
+    def get_values(self):
+        """ Return all values currently in the queue.  Each value is a tuple
+        of (timestamp, value).
+        """
+        values = []
+        while not self._queue.empty():
+            item = self._queue.get()
+            values.append(item)
+        return values

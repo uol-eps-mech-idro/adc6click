@@ -10,6 +10,7 @@ Before running this script, the pigpio daemon must be running.
  sudo pigpiod
 
 """
+import datetime
 import time
 from threading import Thread
 from threading import Thread
@@ -192,7 +193,7 @@ class AD7124Driver:
         self._read_thread.start()
 
     def _read_continuously(self):
-        """ """
+        """ Worker function for _read_thread. """
         print("_read_continuously started...")
         # Enable continuous read mode.  Set the CONT_READ bit.
         value = self._spi.read_register(self._pi, AD7124RegNames.ADC_CTRL_REG)
@@ -204,20 +205,26 @@ class AD7124Driver:
             value, status = self.read_data_wait()
             channel_num = status & 0x0f
             print("thread read cont: channel:", channel_num, "value:", value)
-            # Post value to queue
-            # channel = self._channels[channel_num]
-            # channel.post(value)
-            # FIXME: Would be better to wait for !RDY interrupt.
-            time.sleep(0.01)
-        # Reset ADC to
+            # Post value to queue for active channels.
+            channel = self._channels.get(channel_num)
+            if channel:
+                channel.post(datetime.datetime.now(), value)
+                # FIXME: Would be better to wait for !RDY interrupt.
+                time.sleep(0.001)
+        # Reset ADC when finished so it ready for the next user.
         self._spi.reset(self._pi)
         print("_read_continuously finished.")
 
     def stop_continuous_read(self):
         """ Kills the thread. """
-        result = True
         # Tell thread to stop
         self._read_thread_running = False
         # Wait for thread to join.
         self._read_thread.join()
-        return result
+
+    def get_values(self, channel_num):
+        """ Returns all values from the channel queue. """
+        values = []
+        channel = self._channels[channel_num]
+        values = channel.get_values()
+        return values

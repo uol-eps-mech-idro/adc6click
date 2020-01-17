@@ -54,11 +54,6 @@ class TestAD7214Driver(unittest.TestCase):
         self.assertEqual(True, power_on_reset)
         self.assertEqual(0, active_channel)
 
-    # Internal functions
-    def _test_write_reg_control(self):
-        """ TODO Can't easily test this as can't read back. """
-        pass
-
     def _test_read_one_conversion(self):
         """ Set up the ADC to do a single conversion.
         Read the status register until a conversion occurs.
@@ -70,14 +65,40 @@ class TestAD7214Driver(unittest.TestCase):
             time.sleep(1)
 
     def test_start_continuous_read(self):
+        """ Test thread start, read and stop.
+        Then test get_values().
+        """
         # Start
         self.ad7124.start_continuous_read()
-        # Wait for a few results to happen.
-        time.sleep(5)
+        # Wait for a few results to be queued.
+        time.sleep(1)
         # Stop
-        result = self.ad7124.stop_continuous_read()
-        self.assertTrue(result)
-
+        self.ad7124.stop_continuous_read()
+        # Get the values from each of the channels.
+        channel = 1
+        values = self.ad7124.get_values(channel)
+        num_values = len(values)
+        self.assertLess(10, num_values)
+        print("Channel ", channel, ", count: ", num_values)
+        for value in values:
+            time_str = value[0].isoformat()
+            print(time_str, value[1])
+        channel = 2
+        values = self.ad7124.get_values(channel)
+        num_values = len(values)
+        self.assertLess(10, num_values)
+        print("Channel ", channel, ", count: ", num_values)
+        for value in values:
+            time_str = value[0].isoformat()
+            print(time_str, value[1])
+        channel = 15
+        values = self.ad7124.get_values(channel)
+        num_values = len(values)
+        self.assertLess(10, num_values)
+        print("Channel ", channel, ", count: ", num_values)
+        for value in values:
+            time_str = value[0].isoformat()
+            print(time_str, value[1])
 
 if __name__ == '__main__':
     unittest.main()

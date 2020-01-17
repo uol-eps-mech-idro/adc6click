@@ -75,17 +75,21 @@ class Voltmeter:
         print("Starting...")
         self._write_header()
         self._adc.init(self._position)
+        self._adc.start_continuous_read()
+        # Try block handles the ctrl+c nicely.
         try:
             while True:
                 for channel in self._channels:
                     channel_number = int(channel)
-                    value = self._adc.read(channel_number)
-                    self._write_value(channel_number, value)
+                    values = self._adc.get_values(channel_number)
+                    for value in values:
+                        self._write_value(channel_number, value)
                 # HACK
                 time.sleep(1.0)
         except KeyboardInterrupt:
             print("\nStopping...")
         finally:
+            self._adc.stop_continuous_read()
             self._adc.term()
             self._write_footer()
 
