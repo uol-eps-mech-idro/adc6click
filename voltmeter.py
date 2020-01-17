@@ -79,11 +79,9 @@ class Voltmeter:
         # Try block handles the ctrl+c nicely.
         try:
             while True:
-                for channel in self._channels:
-                    channel_number = int(channel)
-                    values = self._adc.get_values(channel_number)
-                    for value in values:
-                        self._write_value(channel_number, value)
+                values = self._adc.get_values()
+                for value in values:
+                    self._write_value(value)
                 # HACK
                 time.sleep(1.0)
         except KeyboardInterrupt:

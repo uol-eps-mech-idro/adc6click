@@ -129,8 +129,16 @@ There is quite a big change in the readings.  WHY!!!!!
 This device has many features and is very configurable.  This makes it
 "interesting" to program.
 
+When reading data from the AD7124, there is only one data register. This means
+that we only need one queue for the data being read.  The values being read
+need to be in time order.
+
+
 Wrote voltmeter.py to provide basic user interface to the AD7124 class.
 Using this to develop the continuous read.
+
+unittest.py now demonstrates reading of multiple channels using threads.
+
 
 
 #### Phase 1

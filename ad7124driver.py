@@ -11,6 +11,7 @@ Before running this script, the pigpio daemon must be running.
 
 """
 import datetime
+import queue
 import time
 from threading import Thread
 from threading import Thread
@@ -34,6 +35,7 @@ class AD7124Driver:
         self._channels = {}
         self._read_thread = None
         self._read_thread_running = False
+        self._queue = queue.SimpleQueue()
 
     def init(self, position):
         """ Initialises the AD7124.
@@ -56,15 +58,26 @@ class AD7124Driver:
         channel.set(self._pi, self._spi)
         self._channels[2] = channel
         # Channel 15: pin AIN15, setup 7, scale 1.0, temperature
-        channel = AD7124Channel(15, 2, 2, 1.0, temperature=True)
+        channel = AD7124Channel(15, 7, 2, 1.0, temperature=True)
         channel.set(self._pi, self._spi)
         self._channels[15] = channel
-        # Ranges: TODO setup properly.
-        for i in range(0, 8):
-            setup = AD7124Setup(i)
-            setup.set(self._pi, self._spi)
-            self._setups.append(setup)
+        # Set up setups (yuk!).
+        # Setup 1.  Unipolar, internal 2.5V reference, fastest rate.
+        setup = AD7124Setup(1, bipolar=False, internal_ref=True,
+                               data_rate=0x7ff, single_cycle=True)
+        setup.set(self._pi, self._spi)
+        self._setups.append(setup)
+        # Setup 2.  Bipolar, max data rate.
+        setup = AD7124Setup(2, data_rate=0x7ff, single_cycle=True)
+        setup.set(self._pi, self._spi)
+        self._setups.append(setup)
+        # Setup 7.  Temperature, use defaults.
+        setup = AD7124Setup(7)
+        setup.set(self._pi, self._spi)
+        self._setups.append(setup)
+        # Diagnostics.
         self._set_diagnostics()
+        # Control register.
         clock_select = 0  # Internal clock.
         mode = 0  # Continuous conversion = 0.
         power_mode = 3  # Full power mode.
@@ -79,16 +92,6 @@ class AD7124Driver:
         """ Terminates the AD7124. """
         self._spi.term(self._pi)
         self._pi.stop()
-
-    def read(self, channel_num):
-        """ Reads one value from the given channel."""
-        voltage = 0.0
-        if 0 <= channel_num <=15:
-            channel = self._channels[channel_num]
-            voltage = channel.read(self._pi, self._spi)
-        else:
-            raise ValueError("Channel number out of range")
-        return voltage
 
     def _set_diagnostics(self):
         """ Setting diagnostics means setting the ERROR_EN register.
@@ -203,14 +206,20 @@ class AD7124Driver:
         while self._read_thread_running:
             # Wait for read
             value, status = self.read_data_wait()
+            # Ready is inverted, so ready is true when bit 7 = 0.
+            ready = (status & 0x80) == 0
             channel_num = status & 0x0f
-            print("thread read cont: channel:", channel_num, "value:", value)
-            # Post value to queue for active channels.
-            channel = self._channels.get(channel_num)
-            if channel:
-                channel.post(datetime.datetime.now(), value)
-                # FIXME: Would be better to wait for !RDY interrupt.
-                time.sleep(0.001)
+            print("thread read cont: ", hex(status), "channel:", channel_num, "value:", value)
+            print("Ready:", ready)
+            # Post value to queue only if ready (stops multiple entries of
+            # the same value).
+            if ready:
+                channel = self._channels.get(channel_num)
+                if channel:
+                    value = channel.interpret(value)
+                item = (datetime.datetime.now(), channel_num, value)
+                self._queue.put(item)
+            time.sleep(0.001)
         # Reset ADC when finished so it ready for the next user.
         self._spi.reset(self._pi)
         print("_read_continuously finished.")
@@ -222,9 +231,12 @@ class AD7124Driver:
         # Wait for thread to join.
         self._read_thread.join()
 
-    def get_values(self, channel_num):
-        """ Returns all values from the channel queue. """
+    def get_values(self):
+        """ Return all values currently in the queue.
+        Each value is a tuple of (timestamp, channel number, value).
+        """
         values = []
-        channel = self._channels[channel_num]
-        values = channel.get_values()
+        while not self._queue.empty():
+            item = self._queue.get()
+            values.append(item)
         return values

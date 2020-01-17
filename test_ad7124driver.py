@@ -20,24 +20,6 @@ class TestAD7214Driver(unittest.TestCase):
     def tearDown(self):
         self.ad7124.term()
 
-    def test_read(self):
-        """ Read a single value from a channel 1.
-        The ADC should be set up to read from channel 1 and 2.
-        """
-        for _ in range(0, 200):
-            time.sleep(0.01)
-            value = self.ad7124.read(1)
-            print("tr: value ", value)
-
-    def test_read_temperature(self):
-        """ Read the temperature of the ADC.
-        """
-        for _ in range(0, 20):
-            time.sleep(0.1)
-            # 15 is the channel for the temperature.
-            value = self.ad7124.read(15)
-            print("tr: temp C", value)
-
     def test_read_status(self):
         """ Verifies the status register.
         After a reset, power on reset will be True.
@@ -71,34 +53,19 @@ class TestAD7214Driver(unittest.TestCase):
         # Start
         self.ad7124.start_continuous_read()
         # Wait for a few results to be queued.
-        time.sleep(1)
+        time.sleep(0.5)
         # Stop
         self.ad7124.stop_continuous_read()
-        # Get the values from each of the channels.
-        channel = 1
-        values = self.ad7124.get_values(channel)
+        # Get the values.
+        values = self.ad7124.get_values()
         num_values = len(values)
-        self.assertLess(10, num_values)
-        print("Channel ", channel, ", count: ", num_values)
+        # Check that more than zero values have been written.
+        self.assertLess(5, num_values)
+        print("Count: ", num_values)
         for value in values:
             time_str = value[0].isoformat()
-            print(time_str, value[1])
-        channel = 2
-        values = self.ad7124.get_values(channel)
-        num_values = len(values)
-        self.assertLess(10, num_values)
-        print("Channel ", channel, ", count: ", num_values)
-        for value in values:
-            time_str = value[0].isoformat()
-            print(time_str, value[1])
-        channel = 15
-        values = self.ad7124.get_values(channel)
-        num_values = len(values)
-        self.assertLess(10, num_values)
-        print("Channel ", channel, ", count: ", num_values)
-        for value in values:
-            time_str = value[0].isoformat()
-            print(time_str, value[1])
+            print(time_str, value[1], value[2])
+
 
 if __name__ == '__main__':
     unittest.main()
