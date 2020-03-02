@@ -47,14 +47,16 @@ class ConfigurationRegister:
         gain is in range 0 to 7. 0 gives range of +/-2.5V.
         """
         self._index = index
-        self._default_value = 0x0001
-        self._value = 0
-        if bipolar:
+        self._default_value = 0x0860
+        # Enable AIN buffers by default
+        self._value = 0x0060
+        if bipolar:  # bit 11
             self._value |= 0x0800
-        if internal_ref:
-            self._value |= 0x0010
-        self._value |= (gain & 0x07)
         # TODO other bits
+        if internal_ref:  # bits 4:3
+            self._value |= 0x0010
+        # Bits 2:0
+        self._value |= (gain & 0x07)
 
     def set(self, pi, spi):
         if self._default_value != self._value:
@@ -70,10 +72,11 @@ class FilterRegister:
         self._index = index
         self._default_value = 0x060180
         self._value = 0
-        self._value |= (data_rate & 0x7ff)
-        if single_cycle:
+        if single_cycle: # bit 16
             self._value |= 0x010000
         # TODO other bits
+        # Bits 10:0
+        self._value |= (data_rate & 0x7ff)
 
     def set(self, pi, spi):
         if self._default_value != self._value:

@@ -15,8 +15,8 @@ class AD7124Channel:
     defaults that do what is generally needed.
     """
 
-    def __init__(self, number, pin, setup_num, scale, unipolar=False, bipolar=False,
-                 temperature=False):
+    def __init__(self, number, pin, setup_num, scale, unipolar=False,
+                 bipolar=False, temperature=False):
         """ Set values for the given channel number.
         Note: only single pin inputs are used.
         """
@@ -29,7 +29,10 @@ class AD7124Channel:
         if not 0 <= pin <= 15:
             raise ValueError("channel pin" + str(number) + " out of range")
         self._positive_pin = pin
-        self._negative_pin = 0b1001  # Ground
+        if unipolar:
+            self._negative_pin = 0b1001  # Ground
+        else:
+            self._negative_pin = pin
         self._enabled = True
         self._scale = scale
         self._unipolar = unipolar
@@ -72,7 +75,9 @@ class AD7124Channel:
     def _to_bipolar_volts(self, int_value):
         volts = 0.0
         int_value -= 0x800000
-        volts = int_value * self._scale
+        Adding scaling to voltage reading.
+        volts = float(int_value / 0x)
+        volts *= self._scale
         # print("channel.read: V", hex(int_value), value)
         return volts
 

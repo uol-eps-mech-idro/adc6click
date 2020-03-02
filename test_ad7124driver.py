@@ -53,7 +53,7 @@ class TestAD7214Driver(unittest.TestCase):
         # Start
         self.ad7124.start_continuous_read()
         # Wait for a few results to be queued.
-        time.sleep(0.5)
+        time.sleep(5)
         # Stop
         self.ad7124.stop_continuous_read()
         # Get the values.

@@ -53,28 +53,32 @@ class AD7124Driver:
         channel = AD7124Channel(1, 1, 1, 1.0, unipolar=True)
         channel.set(self._pi, self._spi)
         self._channels[1] = channel
-        # Channel 2: pin AIN2, setup 2, scale 1.0, bipolar
-        channel = AD7124Channel(2, 2, 2, 1.0, bipolar=True)
-        channel.set(self._pi, self._spi)
-        self._channels[2] = channel
-        # Channel 15: pin AIN15, setup 7, scale 1.0, temperature
-        channel = AD7124Channel(15, 7, 2, 1.0, temperature=True)
-        channel.set(self._pi, self._spi)
-        self._channels[15] = channel
+        if False:
+            # Channel 2: pin AIN2, setup 2, scale 1.0, bipolar
+            channel = AD7124Channel(2, 2, 2, 1.0, bipolar=True)
+            channel.set(self._pi, self._spi)
+            self._channels[2] = channel
+        if False:
+            # Channel 15: pin AIN15, setup 7, scale 1.0, temperature
+            channel = AD7124Channel(15, 7, 2, 1.0, temperature=True)
+            channel.set(self._pi, self._spi)
+            self._channels[15] = channel
         # Set up setups (yuk!).
         # Setup 1.  Unipolar, internal 2.5V reference, fastest rate.
         setup = AD7124Setup(1, bipolar=False, internal_ref=True,
                                data_rate=0x7ff, single_cycle=True)
         setup.set(self._pi, self._spi)
         self._setups.append(setup)
-        # Setup 2.  Bipolar, max data rate.
-        setup = AD7124Setup(2, data_rate=0x7ff, single_cycle=True)
-        setup.set(self._pi, self._spi)
-        self._setups.append(setup)
-        # Setup 7.  Temperature, use defaults.
-        setup = AD7124Setup(7)
-        setup.set(self._pi, self._spi)
-        self._setups.append(setup)
+        if False:
+            # Setup 2.  Bipolar, max data rate.
+            setup = AD7124Setup(2, data_rate=0x7ff, single_cycle=True)
+            setup.set(self._pi, self._spi)
+            self._setups.append(setup)
+        if False:
+            # Setup 7.  Temperature, use defaults.
+            setup = AD7124Setup(7)
+            setup.set(self._pi, self._spi)
+            self._setups.append(setup)
         # Diagnostics.
         self._set_diagnostics()
         # Control register.
@@ -191,6 +195,13 @@ class AD7124Driver:
         Results are placed the queue associated with each channel so they can
         be read asynchronously.
         """
+        # Enable continuous read mode.  Set the CONT_READ bit.
+        value = self._spi.read_register(self._pi, AD7124RegNames.ADC_CTRL_REG)
+        value |= 0x0800
+        self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
+        # Start thread.
+        # TODO May need to change this to use a multiprocessing thread
+        # if readings are missed.
         self._read_thread_running = True
         self._read_thread = Thread(target = self._read_continuously)
         self._read_thread.start()
@@ -198,10 +209,6 @@ class AD7124Driver:
     def _read_continuously(self):
         """ Worker function for _read_thread. """
         print("_read_continuously started...")
-        # Enable continuous read mode.  Set the CONT_READ bit.
-        value = self._spi.read_register(self._pi, AD7124RegNames.ADC_CTRL_REG)
-        value |= 0x0800
-        self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
         # Repeat until told to quit
         while self._read_thread_running:
             # Wait for read
@@ -209,8 +216,9 @@ class AD7124Driver:
             # Ready is inverted, so ready is true when bit 7 = 0.
             ready = (status & 0x80) == 0
             channel_num = status & 0x0f
-            print("thread read cont: ", hex(status), "channel:", channel_num, "value:", value)
-            print("Ready:", ready)
+            print("thread read cont: ", hex(status), "channel:",
+                  channel_num, "value:", value)
+            # print("Ready:", ready)
             # Post value to queue only if ready (stops multiple entries of
             # the same value).
             if ready:
@@ -220,8 +228,6 @@ class AD7124Driver:
                 item = (datetime.datetime.now(), channel_num, value)
                 self._queue.put(item)
             time.sleep(0.001)
-        # Reset ADC when finished so it ready for the next user.
-        self._spi.reset(self._pi)
         print("_read_continuously finished.")
 
     def stop_continuous_read(self):
@@ -230,6 +236,8 @@ class AD7124Driver:
         self._read_thread_running = False
         # Wait for thread to join.
         self._read_thread.join()
+        # Reset ADC when finished so it ready for the next user.
+        self._spi.reset(self._pi)
 
     def get_values(self):
         """ Return all values currently in the queue.

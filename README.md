@@ -4,10 +4,14 @@ This project implements a Python 3 driver for the MikroElectronica ADC 6 Click
 board that uses the AD7214-8 24 bit ADC.
 
 ## To Do
+
 1. Work out what the values from the data register mean and how to make them into something sensible.
 HERE Posting data to queue.
+1. Full Python documentation.
+1. Make the code into a full Python package.
 
 ## DONE
+
 1. Read the ID register.
 1. Read the status register.
 1. Read the data register.
@@ -138,6 +142,14 @@ Wrote voltmeter.py to provide basic user interface to the AD7124 class.
 Using this to develop the continuous read.
 
 unittest.py now demonstrates reading of multiple channels using threads.
+
+#### Hardware setup
+
+The current hardware setup is to use REF1IN+/- with + connected to the
+internal reference output and - connected to Vss.  This means that measuring
+input voltages is unipolar, +ve pin only, range 0 to +2.5V.
+
+The reference voltage output needs to be enabled. ADC control bit 8.
 
 
 
