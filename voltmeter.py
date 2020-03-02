@@ -44,17 +44,18 @@ class Voltmeter:
                           help="Position of the ADC6Click: 1 or 2.  Default is '%default'.")
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose")
-        (options, channels) = parser.parse_args()
-        # print("print options", options, "channels", channels)
-        num_channels = len(channels)
-        # print("print num_channels", num_channels)
-        if num_channels not in (1, 2):
+        (options, requested_channels) = parser.parse_args()
+        # print("print options", options, "channels", requested_channels)
+        num_requested_channels = len(requested_channels)
+        # print("print num_requested_channels", num_requested_channels)
+        if num_requested_channels not in (1, 2):
             parser.error("must have at least one channel.")
         else:
-            for channel in channels:
-                channel_num = int(channel)
-                if 0 <= channel_num <= 15:
-                    self._channels.append(channel_num)
+            # Create and store each of the channel instances.
+            for requested_channel in requested_channels:
+                requested_channel_num = int(requested_channel)
+                if 0 <= requested_channel_num <= 15:
+                    self._channels.append(requested_channel_num)
                 else:
                     parser.error("channel number out of range. 0 to 15 only.")
         if options.position in (1, 2):
@@ -76,7 +77,7 @@ class Voltmeter:
         self._write_header()
         self._adc.init(self._position)
         self._adc.start_continuous_read()
-        # Try block handles the ctrl+c nicely.
+        # Try block handles ctrl+c nicely.
         try:
             while True:
                 values = self._adc.get_values()

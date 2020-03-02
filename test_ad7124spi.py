@@ -22,6 +22,15 @@ class TestAD7214Spi(unittest.TestCase):
         self._spi.term(self._pi)
         self._pi.stop()
 
+    def test_reset(self):
+        """ Reset the AD7124.
+        The reset function changes the default for channel 0 to disabled.  This
+        proves that it has done the "right thing".
+        """
+        self._spi.reset(self._pi)
+        value = self._spi.read_register(self._pi, AD7124RegNames.CH0_MAP_REG)
+        self.assertEqual(0x0001, value)
+
     def test_read_register(self):
         """ Read the CH1 register.
         Should be 0x0001 after reset command resets default value.

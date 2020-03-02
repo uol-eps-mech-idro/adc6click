@@ -168,7 +168,7 @@ class AD7124Driver:
         self._wait_for_data_ready()
         value = self._spi.read_register_status(self._pi, AD7124RegNames.DATA_REG)
         print("read_data_wait:", hex(value[0]), hex(value[1]))
-        return value
+        return value[0]
 
     def read_one_conversion(self):
         """ Requests conversion on pin AIN1.
@@ -248,3 +248,37 @@ class AD7124Driver:
             item = self._queue.get()
             values.append(item)
         return values
+
+    def to_voltage(_, int_value, gain, vref, bipolar, scale):
+        voltage = 0.0
+        if (bipolar):
+            voltage = float(int_value / (0x7FFFFF - 1))
+        else:
+            voltage = float(int_value / 0xFFFFFF)
+        voltage = voltage * vref / float(gain)
+        voltage *= scale
+        return voltage
+
+    def _to_temperature(self, int_value):
+        """ Convert ADC value to temperature in degrees Celcius.
+        """
+        temperature_c = 0.0
+        int_value -= 0x800000
+        # print("channel.read: B", hex(int_value))
+        temperature_c = float(int_value)
+        temperature_c /= 13584
+        # print("channel.read: C", value)
+        temperature_c -= 272.5
+        # print("channel.read: D", value)
+        return temperature_c
+
+    def interpret(self, int_value):
+        """ Return the voltage/temperature after scaling. """
+        if self._unipolar:
+            value = self._to_voltage(int_value, false)
+        elif self._bipolar:
+            value = self._to_voltage(int_value, true)
+        elif self._temperature:
+            value = self._to_temperature(int_value)
+        return value
+

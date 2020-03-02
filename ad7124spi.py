@@ -48,7 +48,7 @@ class AD7124SPI:
         self.reset(pi)
         # Check correct device is present.
         ad7124_id = self._read_id(pi)
-        # print("init id", ad7124_id)
+        print("init id", hex(ad7124_id))
         if ad7124_id not in (0x14, 0x16):
             raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
@@ -65,7 +65,7 @@ class AD7124SPI:
         # TODO WAIT UNTIL PROPERLY READY
         time.sleep(0.001)
         # Disable Channel 0 (enabled by default after reset).
-        # 0x0001 is defautl for the other channel registers.
+        # 0x0001 is default for the other channel registers.
         value = 0x0001
         register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value)
         self.write_register(pi, register_enum, value)
@@ -149,7 +149,7 @@ class AD7124SPI:
         """
         result = self._read_register(pi, register_enum, False)
         value = self._data_to_int(result[1])
-        # print("read_register: value", hex(value))
+        print("read_register: value", hex(value))
         return value
 
     def read_register_status(self, pi, register_enum):
