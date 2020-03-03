@@ -161,6 +161,6 @@ class AD7124SPI:
         data = result[1]
         status = data.pop()
         value = self._data_to_int(data)
-        # print("read_register_status: value:", hex(value),
-        #       "status: ", hex(status))
+        print("read_register_status: value:", hex(value),
+              "status: ", hex(status))
         return (value, status)
