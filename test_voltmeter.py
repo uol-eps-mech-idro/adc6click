@@ -65,6 +65,14 @@ class TestAD7214Voltmeter(unittest.TestCase):
         new_value |= 0x0800  # 11 _ADC6_CONFIG_ENABLE_BIPOLAR_OP
         new_value |= 0x0400  # 6 _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
         new_value |= 0x0200  # 5 _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
+        # new_value |= 0x0010  # 4:3 Internal ref.
+        self._spi.write_register(self._pi, register, new_value)
+        value = self._spi.read_register(self._pi, register)
+        self.assertEqual(new_value, value)
+        register = AD7124RegNames.FILT0_REG
+        new_value = 0
+        new_value |= 0x400000  # 23:21 Filter, SINC3
+        new_value |= 0x0003FF  # 10:0 Go fastest 2047
         self._spi.write_register(self._pi, register, new_value)
         value = self._spi.read_register(self._pi, register)
         self.assertEqual(new_value, value)
@@ -103,7 +111,8 @@ class TestAD7214Voltmeter(unittest.TestCase):
         print("Initialised.")
         # Start
         for i in range(0,200):
-            time.sleep(0.5)
+            #time.sleep(0.02)
+            time.sleep(0.01)
             # Read register with status as status enabled in control register.
             (int_value, status) = self._spi.read_register_status(self._pi, AD7124RegNames.DATA_REG)
             gain = 1
