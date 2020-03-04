@@ -87,46 +87,21 @@ trying to read the ID.  Fixed the code and it works.
 
 This works for me so using this for the rest of the project.
 
+One problem with this is that the PiGPIO code does not correctly handle the
+DataReady signal that the ADC uses to say that data is ready for reading.  The
+DataReady signal needs to be used correctly for the continuous read mode.  In
+single read mode, the sampling rate is limited to about 8000 samples per second.
+
 ### ADC development
 
 Once I could talk to the ADC, setting it up to read values was more tricky than
 I expected.  It took a good while to get values from the ADC and when I did they
-were not what I expected.  These are some of the readings (unittest.sh does a
-single ADC data register read):
+were not what I expected.  Evnetually, I tracked this problem down to a wiring
+issue and once solved, I was able to get reliable readings from the device.
 
-Input   Value (hex)
-+0.121  0x0
--0.035  0x0
--0.200  0x0
--0.210  0x0
--0.220  0x0
--0.230  0x6c5c91
--0.241  0x7614bc
--0.250  0x76ecd9
--0.261  0x77d3eb
--0.273  0x78aa49
--0.282  0x7927b7
--0.291  0x799128
--0.301  0x79cc63
--0.310  0x79ca28
--0.321  0x79af8a
--0.330  0x797390
--0.351  0x7827fa
--0.362  0x75f1d5
--0.373  0x6aeaad
--0.381  0x774f37
--0.401  0x0
--0.491  0x0
-
-Also the values are not the same if read repeatedly, e.g. for -0.381V:
-0x7607f5
-0x73c14c
-0x774b26
-0x772d8d
-0x7093bb
-0x769994
-
-There is quite a big change in the readings.  WHY!!!!!
+The most helpful code that I found was the code in the ardunio-code directory.
+However, the voltage conversion function Ad7124Chip::toVoltage() did not work
+correctly so I had to re-write that.
 
 ### AD7124
 
@@ -137,21 +112,16 @@ When reading data from the AD7124, there is only one data register. This means
 that we only need one queue for the data being read.  The values being read
 need to be in time order.
 
+### Example code
 
-Wrote voltmeter.py to provide basic user interface to the AD7124 class.
-Using this to develop the continuous read.
+The test harnesses, files starting with "test_" are used to demonstrate how
+the code can be used.  These are run using `unittest.sh`.
 
-unittest.py now demonstrates reading of multiple channels using threads.
+voltmeter.py is a little application that shows how the ADc can be used.
 
 #### Hardware setup
 
-The current hardware setup is to use REF1IN+/- with + connected to the
-internal reference output and - connected to Vss.  This means that measuring
-input voltages is unipolar, +ve pin only, range 0 to +2.5V.
-
-The reference voltage output needs to be enabled. ADC control bit 8.
-
-
+TDB
 
 #### Phase 1
 

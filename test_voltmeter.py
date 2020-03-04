@@ -130,25 +130,27 @@ class TestAD7214Voltmeter(unittest.TestCase):
         scale = 1.0
         start_time = time.time()
         valid_readings = 0
+        invalid_readings = 0
         print("Initialised.")
         # Start
-        for i in range(0,200):
+        for i in range(0, 100000):
             #time.sleep(0.02)
             #time.sleep(0.000001)
             # Read register with status as status enabled in control register.
             (int_value, status) = self._spi.read_register_status(self._pi, AD7124RegNames.DATA_REG)
             if status == 0x10:
-                voltage = self._to_voltage(int_value, gain, vref, bipolar, scale)
+                #voltage = self._to_voltage(int_value, gain, vref, bipolar, scale)
                 #print("Voltage: {:2.8}".format(voltage))
                 valid_readings += 1
+            else:
+                invalid_readings += 1
         # Just to say test passed!
         self.assertEqual(1, 1)
         time_taken = time.time() - start_time
         print("Time taken: ", time_taken)
         print("Valid readings: ", valid_readings)
+        print("Invalid readings: ", invalid_readings)
         print("Readings per second: ", valid_readings / time_taken)
-
-# TODO Continuous read.
 
 
 if __name__ == '__main__':
