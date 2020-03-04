@@ -60,6 +60,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
                 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE |
                 _ADC6_CONTROL_FULL_POWER_MODE );
         """
+        # Config
         register = AD7124RegNames.CFG0_REG
         new_value = 0
         new_value |= 0x0800  # 11 _ADC6_CONFIG_ENABLE_BIPOLAR_OP
@@ -69,10 +70,25 @@ class TestAD7214Voltmeter(unittest.TestCase):
         self._spi.write_register(self._pi, register, new_value)
         value = self._spi.read_register(self._pi, register)
         self.assertEqual(new_value, value)
+        # Filter
         register = AD7124RegNames.FILT0_REG
         new_value = 0
-        new_value |= 0x400000  # 23:21 Filter, SINC3
-        new_value |= 0x0003FF  # 10:0 Go fastest 2047
+        if 0:
+            new_value = 0x060180  # Default
+            # 47 readings per second
+        if 0:
+            new_value = 0x060001  # Fastest!
+            # 6404 readings per second
+        if 1:
+            new_value = 0x000001  # Fastest!
+            # 8245 readings per second
+            # with all prints disabled.
+        if 0:
+            new_value |= 0x400000  # 23:21 Filter, SINC3
+            new_value |= 0x0007FF  # 10:0 Go fastest 2047
+        if 0:
+            new_value |= 0x400000  # 23:21 Filter, SINC3
+            new_value |= 0x0007FF  # 10:0 Go fastest 2047
         self._spi.write_register(self._pi, register, new_value)
         value = self._spi.read_register(self._pi, register)
         self.assertEqual(new_value, value)
@@ -96,7 +112,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
 
     def _check_errors(self):
         """ Checks for any errors that could prevent the tests running.
-        Asserts if soemthing fatal is wrong.
+        Asserts if something fatal is wrong.
         """
         # Read error register.
         (int_value, status) = self._spi.read_register_status(self._pi, AD7124RegNames.ERR_REG)
@@ -108,21 +124,31 @@ class TestAD7214Voltmeter(unittest.TestCase):
         """
         self._init_adc()
         self._check_errors()
+        gain = 1
+        vref = 2.64
+        bipolar = True
+        scale = 1.0
+        start_time = time.time()
+        valid_readings = 0
         print("Initialised.")
         # Start
         for i in range(0,200):
             #time.sleep(0.02)
-            time.sleep(0.01)
+            #time.sleep(0.000001)
             # Read register with status as status enabled in control register.
             (int_value, status) = self._spi.read_register_status(self._pi, AD7124RegNames.DATA_REG)
-            gain = 1
-            vref = 2.64
-            bipolar = True
-            scale = 1.0
-            voltage = self._to_voltage(int_value, gain, vref, bipolar, scale)
-            print("Voltage:", voltage)
+            if status == 0x10:
+                voltage = self._to_voltage(int_value, gain, vref, bipolar, scale)
+                #print("Voltage: {:2.8}".format(voltage))
+                valid_readings += 1
         # Just to say test passed!
         self.assertEqual(1, 1)
+        time_taken = time.time() - start_time
+        print("Time taken: ", time_taken)
+        print("Valid readings: ", valid_readings)
+        print("Readings per second: ", valid_readings / time_taken)
+
+# TODO Continuous read.
 
 
 if __name__ == '__main__':
