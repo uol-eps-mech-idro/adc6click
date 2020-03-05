@@ -24,14 +24,14 @@ class TestAD7214Driver(unittest.TestCase):
         id = self.ad7124.read_id()
         self.assertIn(id, (0x14, 0x16))
 
-    # def test_reset(self):
-    #     """ Reset the AD7124.
-    #     The reset function changes the default for channel 0 to disabled.  This
-    #     proves that it has done the "right thing".
-    #     """
-    #     self.ad7124.reset()
-    #     value = self._spi.read_register(self._pi, AD7124RegNames.CH0_MAP_REG)
-    #     self.assertEqual(0x0001, value)
+    def test_reset(self):
+        """ Reset the AD7124.
+        The reset function changes the default for channel 0 to disabled.  This
+        proves that it has done the "right thing".
+        """
+        self.ad7124.reset()
+        value = self.ad7124.read_register(AD7124RegNames.CH0_MAP_REG)
+        self.assertEqual(0x0001, value)
 
     # def test_read_status(self):
     #     """ Verifies the status register.

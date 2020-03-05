@@ -9,7 +9,7 @@ from threading import Thread
 from ad7124spi import AD7124SPI, bytes_to_string
 from ad7124channel import AD7124Channel
 from ad7124setup import AD7124Setup
-from ad7124registers import AD7124RegNames
+from ad7124registers import AD7124RegNames, AD7124Registers
 
 
 class AD7124Driver:
@@ -19,6 +19,7 @@ class AD7124Driver:
 
     def __init__(self, position):
         """ Initialise the AD7124 device. """
+        self._registers = AD7124Registers()
         self._spi = AD7124SPI(position)
         self.reset()
         # Check correct device is present.
@@ -40,33 +41,33 @@ class AD7124Driver:
         # print("_build_command", hex(command))
         return command
 
-    # def _read_register(self, pi, register_enum, status_byte):
-    #     """ Returns the value read from the register as a tuple of:
-    #     count and a list of bytes.
-    #     """
-    #     to_send = []
-    #     command = self._build_command(register_enum, True)
-    #     to_send.append(command)
-    #     # Send correct number of padding bytes to get result.
-    #     size = self._registers.size(register_enum)
-    #     num_bytes = self._registers.size(register_enum)
-    #     if status_byte:
-    #         num_bytes += 1
-    #     value = 0
-    #     value_bytes = value.to_bytes(num_bytes, byteorder='big')
-    #     to_send += value_bytes
-    #     result = pi.spi_xfer(self._spi_handle, to_send)
-    #     # print("_read_register: count", result[0], "data", result[1])
-    #     return result
+    def _read_register(self, register_enum, status_byte):
+        """ Returns the value read from the register as a tuple of:
+        count and a list of bytes.
+        """
+        to_send = []
+        command = self._build_command(register_enum, True)
+        to_send.append(command)
+        # Send correct number of padding bytes to get result.
+        size = self._registers.size(register_enum)
+        num_bytes = self._registers.size(register_enum)
+        if status_byte:
+            num_bytes += 1
+        value = 0
+        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        to_send += value_bytes
+        (count, result) = self._spi.read_register(to_send)
+        # print("_read_register: count", result[0], "data", result[1])
+        return result
 
-    # def _data_to_int(_, data):
-    #     int_value = 0
-    #     # Remove first byte as always 0xFF
-    #     data = data[1:]
-    #     for byte_value in data:
-    #         int_value <<= 8
-    #         int_value |= byte_value
-    #     return int_value
+    def _data_to_int(_, data):
+        int_value = 0
+        # Remove first byte as always 0xFF
+        data = data[1:]
+        for byte_value in data:
+            int_value <<= 8
+            int_value |= byte_value
+        return int_value
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
@@ -79,7 +80,7 @@ class AD7124Driver:
         # 0x0001 is default for the other channel registers.
         value = 0x0001
         register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value)
-        self.write_register(pi, register_enum, value)
+        self.write_register(register_enum, value)
 
     def read_id(self):
         """ The value of the ID register is returned. """
@@ -96,6 +97,30 @@ class AD7124Driver:
         if count == 2:
             result = data[1]
         return result
+
+    def write_register(self, register_enum, value):
+        """ Write the given value to the given register.
+        """
+        # Command value
+        to_send = []
+        command = self._build_command(register_enum)
+        to_send.append(command)
+        # Convert value to bytes.
+        num_bytes = self._registers.size(register_enum)
+        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        to_send += value_bytes
+        # Print to_send as hex values for easier debugging.
+        print("write_register: to_send", bytes_to_string(to_send))
+        # Write the data.
+        self._spi.write_register(to_send)
+
+    def read_register(self, register_enum):
+        """ Returns the value read from the register as an int value.
+        """
+        result = self._read_register(register_enum, False)
+        value = self._data_to_int(result)
+        print("read_register: value", hex(value))
+        return value
 
     # def set_error_register(self, value):
     #     """ Set the ERROR_EN register.
@@ -192,31 +217,6 @@ class AD7124Driver:
     #     temperature_c -= 272.5
     #     # print("channel.read: D", value)
     #     return temperature_c
-
-    # def write_register(self, pi, register_enum, value):
-    #     """ Write the given value to the given register.
-    #     """
-    #     # Command value
-    #     to_send = []
-    #     command = self._build_command(register_enum)
-    #     to_send.append(command)
-    #     # Convert value to bytes.
-    #     num_bytes = self._registers.size(register_enum)
-    #     value_bytes = value.to_bytes(num_bytes, byteorder='big')
-    #     to_send += value_bytes
-    #     # Print to_send as hex values for easier debugging.
-    #     to_send_string = [hex(i) for i in to_send]
-    #     print("write_register: to_send", to_send_string)
-    #     # Write the data.
-    #     pi.spi_xfer(self._spi_handle, to_send)
-
-    # def read_register(self, pi, register_enum):
-    #     """ Returns the value read from the register as an int value.
-    #     """
-    #     result = self._read_register(pi, register_enum, False)
-    #     value = self._data_to_int(result[1])
-    #     print("read_register: value", hex(value))
-    #     return value
 
     # def read_register_status(self, pi, register_enum):
     #     """ Returns a tuple of the value read from the register as an int value
