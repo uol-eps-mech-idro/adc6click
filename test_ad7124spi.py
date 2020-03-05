@@ -6,6 +6,7 @@ from ad7124spi import AD7124SPI
 
 
 class TestAD7214Spi(unittest.TestCase):
+    """ Tests the SPI interface functions. """
 
     def setUp(self):
         """ Verify init works.
@@ -17,8 +18,7 @@ class TestAD7214Spi(unittest.TestCase):
         self._spi.write_register(to_send)
 
     def test_read_register(self):
-        """ Read the ID register.
-        Should return 0x14.
+        """ Read the ID register. Should return 0x14.
         """
         to_send = b'\x45\x00'
         result = self._spi.read_register(to_send)

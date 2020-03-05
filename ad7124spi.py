@@ -2,7 +2,6 @@
 """ Hides the SPI calls from the driver.
 """
 
-import time
 import pigpio
 
 
@@ -15,14 +14,14 @@ class AD7124SPI:
     AD7124_SPI_BAUD_RATE = 32 * 1000
     AD7124_SPI_MODE = 0b00  # Mode 3
 
-
     def __init__(self, position):
         """ Initialises the AD7124.
-        position is the Pi2 click shield position number, 1 or 2.
-        Throws an exception if it fails.
+        :param position: The Pi2 click shield position number, 1 or 2.
+        If the pigpio call fails, error messages are shown on the
+        terminal. Throws an exception if position is out of range.
         """
+        # print("__init__")
         self._pi = pigpio.pi()
-        print("init")
         # The Pi2 click shield only supports main bus, bit 8 = 0.
         spi_flags = 0
         # Set to mode 3
@@ -36,24 +35,25 @@ class AD7124SPI:
             raise ValueError('ERROR: position must be 1 or 2')
         # print("init: channel", spi_channel)
         # Open SPI device
-        self._spi_handle = self._pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
+        self._spi_handle = self._pi.spi_open(
+            spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
 
     def read_register(self, to_send):
         """ Performs a SPI read using the to_send data.
         :param to_send: The bytes to send.
-        :returns: the data read by the function.
+        :returns: The data read by the function.
         """
         to_send_string = [hex(i) for i in to_send]
         print("read_register: to_send:", to_send_string)
-        (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
+        (_, data) = self._pi.spi_xfer(self._spi_handle, to_send)
         data_string = [hex(i) for i in data]
         print("read_register: data:", data_string)
         return data
 
     def write_register(self, to_send):
         """ The bytes in to_send is wrtten to the SPI bus.
+        :param to_send: The bytes to send.
         """
         to_send_string = [hex(i) for i in to_send]
         print("write_register:", to_send_string)
         self._pi.spi_write(self._spi_handle, to_send)
-
