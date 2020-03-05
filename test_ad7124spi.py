@@ -21,7 +21,7 @@ class TestAD7214Spi(unittest.TestCase):
         """ Read the ID register. Should return 0x14.
         """
         to_send = b'\x45\x00'
-        result = self._spi.read_register(to_send)
+        (_, result) = self._spi.read_register(to_send)
         self.assertEqual(0xff, result[0])
         self.assertEqual(0x14, result[1])
 
@@ -32,14 +32,14 @@ class TestAD7214Spi(unittest.TestCase):
         Read back to verify change has occurred.
         """
         to_send = b'\x4a\x00\x00'
-        result = self._spi.read_register(to_send)
+        (_, result) = self._spi.read_register(to_send)
         self.assertEqual(0xff, result[0])
         self.assertEqual(0x00, result[1])
         self.assertEqual(0x01, result[2])
         to_send = b'\x0a\x80\x10'
         self._spi.write_register(to_send)
         to_send = b'\x4a\x00\x00'
-        result = self._spi.read_register(to_send)
+        (_, result) = self._spi.read_register(to_send)
         self.assertEqual(0xff, result[0])
         self.assertEqual(0x80, result[1])
         self.assertEqual(0x10, result[2])

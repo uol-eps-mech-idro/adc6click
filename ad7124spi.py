@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 """ Hides the SPI calls from the driver.
+Uses PiGPIO for SPI and GPIO access. http://abyz.me.uk/rpi/pigpio/
+The PiGPIO daemon must be running before using this script.  Start
+using::
+    sudo pigpiod
 """
 
 import pigpio
 
 
+def bytes_to_string(data):
+    return [hex(i) for i in data]
+
+
 class AD7124SPI:
-    """ A wrapper that hides the SPI calls.
+    """ A wrapper that hides the SPI calls from the driver.
     """
     # Values for SPI communications.  All other values are default.
     # Max SPI baud rate is 5MHz.
@@ -41,19 +49,17 @@ class AD7124SPI:
     def read_register(self, to_send):
         """ Performs a SPI read using the to_send data.
         :param to_send: The bytes to send.
-        :returns: The data read by the function.
+        :returns: Tuple containing (count of bytes read, data as bytes).
         """
-        to_send_string = [hex(i) for i in to_send]
-        print("read_register: to_send:", to_send_string)
-        (_, data) = self._pi.spi_xfer(self._spi_handle, to_send)
-        data_string = [hex(i) for i in data]
-        print("read_register: data:", data_string)
-        return data
+        print("read_register: to_send:", bytes_to_string(to_send))
+        (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
+        print("read_register: data:", bytes_to_string(data))
+        return (count, data)
 
     def write_register(self, to_send):
         """ The bytes in to_send is wrtten to the SPI bus.
         :param to_send: The bytes to send.
         """
-        to_send_string = [hex(i) for i in to_send]
-        print("write_register:", to_send_string)
+        print("write_register:", bytes_to_string(to_send))
         self._pi.spi_write(self._spi_handle, to_send)
+
