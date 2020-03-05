@@ -3,9 +3,6 @@
 """
 
 import pigpio
-import time
-
-from ad7124registers import AD7124RegNames, AD7124Registers
 
 
 class AD7124SPI:
@@ -20,13 +17,13 @@ class AD7124SPI:
     def __init__(self):
         """ Initialises the AD7124 device. """
         self._pi = pigpio.pi()
-        self._registers = AD7124Registers()
         self._spi_handle = 0
 
-    def init(self, pi, position):
-        """ Initialises the AD7124..
-        position is the Pi2 click shield position number, 1 or 2.
+    def init(self, position):
+        """ Initialises the AD7124.
         Throws an exception if it fails.
+        :param position: The position
+        :type position: integer
         """
         print("\ninit: baud rate:", self.AD7124_SPI_BAUD_RATE)
         # The Pi2 click shield only supports main bus, bit 8 = 0.
@@ -42,125 +39,32 @@ class AD7124SPI:
             raise ValueError('ERROR: position must be 1 or 2')
         # print("init: channel", spi_channel)
         # Open SPI device
-        self._spi_handle = pi.spi_open(spi_channel, self.AD7124_SPI_BAUD_RATE,
-                                       spi_flags)
-        # print("init 2")
-        self.reset(pi)
-        # Check correct device is present.
-        ad7124_id = self._read_id(pi)
-        print("init id", hex(ad7124_id))
-        if ad7124_id not in (0x14, 0x16):
-            raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
+        self._spi_handle = self._pi.spi_open(spi_channel,
+                                             self.AD7124_SPI_BAUD_RATE,
+                                             spi_flags)
 
-    def term(self, pi):
+    def term(self):
         """ Terminates the AD7124. """
         # print("term: pi", pi)
-        pi.spi_close(self._spi_handle)
+        self._pi.spi_close(self._spi_handle)
 
-    def reset(self, pi):
-        """ Resets the AD7124 to power up conditions. """
-        to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
-        # print("reset command", to_send)
-        pi.spi_xfer(self._spi_handle, to_send)
-        # TODO WAIT UNTIL PROPERLY READY
-        time.sleep(0.001)
-        # Disable Channel 0 (enabled by default after reset).
-        # 0x0001 is default for the other channel registers.
-        value = 0x0001
-        register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value)
-        self.write_register(pi, register_enum, value)
-
-    def _read_id(self, pi):
-        """ The value of the ID register is returned. """
-        result = 0
-        # print("read_id")
-        to_send = []
-        command = self._build_command(AD7124RegNames.ID_REG, True)
-        to_send.append(command)
-        to_send.append(0)
-        # print("read_id command", hex(to_send[0]))
-        (count, data) = pi.spi_xfer(self._spi_handle, to_send)
-        # print("read_id", count, data)
-        # Value is in second byte.
-        if count == 2:
-            result = data[1]
-        return result
-
-    def _build_command(self, register_enum, read=False):
-        """ Builds a command byte.
-        First bit (bit 7) must be a 0.
-        Second bit (bit 6) is read (1) or write (0).
-        Remaining 6 bits are register address.
+    def read_register(self, to_send):
+        """ Gets data from the a register.
+        :param to_send: The command with the correct number of padding bytes to
+            receive the data.
+        :type to_send: bytes
+        :returns: The value read from the register as a tuple of
+            (count, list of bytes).
+        :rtype: tuple
         """
-        command = 0
-        if read:
-            command += (1 << 6)
-        command += (register_enum.value & 0x3f)
-        # print("_build_command", hex(command))
-        return command
-
-    def write_register(self, pi, register_enum, value):
-        """ Write the given value to the given register.
-        """
-        # Command value
-        to_send = []
-        command = self._build_command(register_enum)
-        to_send.append(command)
-        # Convert value to bytes.
-        num_bytes = self._registers.size(register_enum)
-        value_bytes = value.to_bytes(num_bytes, byteorder='big')
-        to_send += value_bytes
-        # Print to_send as hex values for easier debugging.
-        to_send_string = [hex(i) for i in to_send]
-        print("write_register: to_send", to_send_string)
-        # Write the data.
-        pi.spi_xfer(self._spi_handle, to_send)
-
-    def _read_register(self, pi, register_enum, status_byte):
-        """ Returns the value read from the register as a tuple of:
-        count and a list of bytes.
-        """
-        to_send = []
-        command = self._build_command(register_enum, True)
-        to_send.append(command)
-        # Send correct number of padding bytes to get result.
-        size = self._registers.size(register_enum)
-        num_bytes = self._registers.size(register_enum)
-        if status_byte:
-            num_bytes += 1
-        value = 0
-        value_bytes = value.to_bytes(num_bytes, byteorder='big')
-        to_send += value_bytes
-        result = pi.spi_xfer(self._spi_handle, to_send)
+        result = self._pi.spi_xfer(self._spi_handle, to_send)
         # print("_read_register: count", result[0], "data", result[1])
         return result
 
-    def _data_to_int(_, data):
-        int_value = 0
-        # Remove first byte as always 0xFF
-        data = data[1:]
-        for byte_value in data:
-            int_value <<= 8
-            int_value |= byte_value
-        return int_value
-
-    def read_register(self, pi, register_enum):
-        """ Returns the value read from the register as an int value.
+    def write_register(self, to_send):
+        """ Write the given value to the given register.
+        :param to_send: The command to send.
+        :type to_send: bytes
         """
-        result = self._read_register(pi, register_enum, False)
-        value = self._data_to_int(result[1])
-        print("read_register: value", hex(value))
-        return value
-
-    def read_register_status(self, pi, register_enum):
-        """ Returns a tuple of the value read from the register as an int value
-        and the value of the status register.
-        """
-        result = self._read_register(pi, register_enum, True)
-        # Get status byte from end of data.
-        data = result[1]
-        status = data.pop()
-        value = self._data_to_int(data)
-        #print("read_register_status: value:", hex(value),
-        #      "status: ", hex(status))
-        return (value, status)
+        # Write the data.
+        self._pi.spi_xfer(self._spi_handle, to_send)

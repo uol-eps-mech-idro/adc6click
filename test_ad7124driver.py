@@ -20,6 +20,15 @@ class TestAD7214Driver(unittest.TestCase):
     def tearDown(self):
         self.ad7124.term()
 
+    def test_reset(self):
+        """ Reset the AD7124.
+        The reset function changes the default for channel 0 to disabled.  This
+        proves that it has done the "right thing".
+        """
+        self._spi.reset(self._pi)
+        value = self._spi.read_register(self._pi, AD7124RegNames.CH0_MAP_REG)
+        self.assertEqual(0x0001, value)
+
     def test_read_status(self):
         """ Verifies the status register.
         After a reset, power on reset will be True.
@@ -65,6 +74,16 @@ class TestAD7214Driver(unittest.TestCase):
         for value in values:
             time_str = value[0].isoformat()
             print(time_str, value[1], value[2])
+
+    def test_read_register_status(self):
+        """ Read the CH1 register with status.
+        Should be 0x0001 and 0xff.
+        """
+        result = self._spi.read_register_status(self._pi,
+                                                AD7124RegNames.CH1_MAP_REG)
+        self.assertEqual(0x0001, result[0])
+        self.assertEqual(0xff, result[1])
+
 
 
 if __name__ == '__main__':
