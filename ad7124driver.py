@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
-""" AD7124-8 driver using the Mikro ADC6Click board on the Raspberry Pi.
+""" AD7124-8 driver.
+Hides the AD7124 details from the user.
 """
-import datetime
-import queue
+
 import time
-from threading import Thread
-from threading import Thread
 from ad7124spi import AD7124SPI, bytes_to_string
-from ad7124channel import AD7124Channel
-from ad7124setup import AD7124Setup
 from ad7124registers import AD7124RegNames, AD7124Registers
 
 
 class AD7124Driver:
-    """ Provides a wrapper that hides the SPI calls and many of the
-    messy parts of the AD7124 implementation.
+    """ Provides a wrapper that hides the messy parts of the AD7124
+    implementation.
     """
 
     def __init__(self, position):
@@ -57,7 +53,7 @@ class AD7124Driver:
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
         (count, result) = self._spi.read_register(to_send)
-        # print("_read_register: count", result[0], "data", result[1])
+        print("_read_register: count", count, "data", result)
         return result
 
     def _data_to_int(_, data):
@@ -84,18 +80,9 @@ class AD7124Driver:
 
     def read_id(self):
         """ The value of the ID register is returned. """
-        result = 0
         # print("read_id")
-        to_send = []
-        command = self._build_command(AD7124RegNames.ID_REG, True)
-        to_send.append(command)
-        to_send.append(0)
-        print("read_id command", bytes_to_string(to_send))
-        (count, data) = self._spi.read_register(to_send)
-        print("read_id", count, data)
-        # Value is in second byte.
-        if count == 2:
-            result = data[1]
+        register_enum = AD7124RegNames(AD7124RegNames.ID_REG)
+        result = self.read_register(register_enum)
         return result
 
     def write_register(self, register_enum, value):
@@ -122,56 +109,72 @@ class AD7124Driver:
         print("read_register: value", hex(value))
         return value
 
+    def read_status(self):
+        """ Returns a tuple containing the values:
+        (ready{bool}, error{bool}, power on reset{bool}, active channel)
+        NOTE: ready = True when ready.  The ADC sets bit 7 to low when ready
+        so this code inverts the sense to make it behave as the other flags do.
+        """
+        # RDY is inverted.
+        ready = True
+        error = False
+        power_on_reset = False
+        active_channel = 0
+        value = self.read_register(AD7124RegNames.STATUS_REG)
+        # print("read_status", hex(value))
+        if value & 0x80:
+            ready = False
+            #print("read_status: ready", ready)
+        if value & 0x40:
+            error = True
+            #print("read_status: error", error)
+        if value & 0x10:
+            power_on_reset = True
+            #print("read_status: power_on_reset", power_on_reset)
+        active_channel &= 0x0f
+        return (ready, error, power_on_reset, active_channel)
+
+
+    def read_register_with_status(self, register_enum):
+        """ Returns a tuple of the value read from the register as an
+        int value and the value of the status register.
+        NOTE: This function should only be used when the DATA_STATUS
+        bit of the ADC_CONTROL register is set.
+        """
+        result = self._read_register(register_enum, True)
+        # Status byte is the last byte.
+        value = self._data_to_int(result[:-1])
+        status = result[-1]
+        print("read_register_with_status: value:", hex(value),
+              "status: ", hex(status))
+        return (value, status)
+
+    def set_adc_control(self, clock_select, mode, power_mode,
+                              ref_en, not_cs_en, data_status, cont_read):
+        """ Writes to the ADC control register.
+        Default value of the register is 0x0000 so defaults of 0 work.
+        """
+        value = 0
+        # The control register is 16 bits, MSB first.
+        if cont_read:
+            value |= 0x0800
+        if data_status:
+            value |= 0x0400
+        if not_cs_en:
+            value |= 0x0200
+        if ref_en:
+            value |= 0x0100
+        value |= ((power_mode & 0x03) << 6)
+        value |= ((mode & 0x0f) << 2)
+        value |= (clock_select & 0x03)
+        print("_set_control_register to_send", hex(value))
+        self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
+
     # def set_error_register(self, value):
     #     """ Set the ERROR_EN register.
+    #     :param value: The value to set (24 bits).
     #     """
-    #     self._spi.write_register(self._pi, AD7124RegNames.ERREN_REG, value)
-
-    # def set_control_register(self, clock_select, mode, power_mode,
-    #                           ref_en, not_cs_en, data_status, cont_read):
-    #     """ Writes to the ADC control register.
-    #     Default value of the register is 0x0000 so defaults of 0 work.
-    #     """
-    #     value = 0
-    #     # The control register is 16 bits, MSB first.
-    #     if cont_read:
-    #         value |= 0x0800
-    #     if data_status:
-    #         value |= 0x0400
-    #     if not_cs_en:
-    #         value |= 0x0200
-    #     if ref_en:
-    #         value |= 0x0100
-    #     value |= ((power_mode & 0x03) << 6)
-    #     value |= ((mode & 0x0f) << 2)
-    #     value |= (clock_select & 0x03)
-    #     print("_set_control_register to_send", hex(value))
-    #     self._spi.write_register(self._pi, AD7124RegNames.ADC_CTRL_REG, value)
-
-    # def read_status(self):
-    #     """ Returns a tuple containing the values:
-    #     (ready{bool}, error{bool}, power on reset{bool}, active channel)
-    #     NOTE: ready = True when ready.  The ADC sets bit 7 to low when ready
-    #     so this code inverts the sense to make it behave as the other flags do.
-    #     """
-    #     # RDY is inverted.
-    #     ready = True
-    #     error = False
-    #     power_on_reset = False
-    #     active_channel = 0
-    #     value = self._spi.read_register(self._pi, AD7124RegNames.STATUS_REG)
-    #     # print("read_status", hex(value))
-    #     if value & 0x80:
-    #         ready = False
-    #         #print("read_status: ready", ready)
-    #     if value & 0x40:
-    #         error = True
-    #         #print("read_status: error", error)
-    #     if value & 0x10:
-    #         power_on_reset = True
-    #         #print("read_status: power_on_reset", power_on_reset)
-    #     active_channel &= 0x0f
-    #     return (ready, error, power_on_reset, active_channel)
+    #     self._spi.write_register(AD7124RegNames.ERREN_REG, value)
 
     # def wait_for_data_ready(self):
     #     """ Blocks until DOUT/!RDY goes low (RDY). """
@@ -217,16 +220,3 @@ class AD7124Driver:
     #     temperature_c -= 272.5
     #     # print("channel.read: D", value)
     #     return temperature_c
-
-    # def read_register_status(self, pi, register_enum):
-    #     """ Returns a tuple of the value read from the register as an int value
-    #     and the value of the status register.
-    #     """
-    #     result = self._read_register(pi, register_enum, True)
-    #     # Get status byte from end of data.
-    #     data = result[1]
-    #     status = data.pop()
-    #     value = self._data_to_int(data)
-    #     #print("read_register_status: value:", hex(value),
-    #     #      "status: ", hex(status))
-    #     return (value, status)

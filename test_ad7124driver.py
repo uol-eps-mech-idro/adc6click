@@ -33,21 +33,37 @@ class TestAD7214Driver(unittest.TestCase):
         value = self.ad7124.read_register(AD7124RegNames.CH0_MAP_REG)
         self.assertEqual(0x0001, value)
 
-    # def test_read_status(self):
-    #     """ Verifies the status register.
-    #     After a reset, power on reset will be True.
-    #     The other values should be False, False, 0.
-    #     """
-    #     status = self.ad7124._read_status()
-    #     print("trs", status)
-    #     ready = status[0]
-    #     error = status[1]
-    #     power_on_reset = status[2]
-    #     active_channel = status[3]
-    #     self.assertEqual(False, ready)
-    #     self.assertEqual(False, error)
-    #     self.assertEqual(True, power_on_reset)
-    #     self.assertEqual(0, active_channel)
+    def test_read_status(self):
+        """ Verifies the status register.
+        After a reset, power on reset will be True.
+        The other values should be False, False, 0.
+        """
+        status = self.ad7124.read_status()
+        # print("trs", status)
+        ready = status[0]
+        error = status[1]
+        power_on_reset = status[2]
+        active_channel = status[3]
+        self.assertEqual(False, ready)
+        self.assertEqual(False, error)
+        self.assertEqual(True, power_on_reset)
+        self.assertEqual(0, active_channel)
+
+    def test_read_register_with_status(self):
+        """ Read the CH1 register with status.
+        Should be 0x0001 and 0xff.
+        """
+        clock_select = 0  # Internal clock.
+        mode = 0  # Continuous conversion mode.
+        power_mode = 3  # Full power mode.
+        ref_en = True  # Internal reference enabled.
+        not_cs_en = False  # Controls DOUT/!RDY pin behaviour.
+        data_status = True  # Enable data status output.
+        cont_read = False  # Continuous conversion.
+        self.ad7124.set_adc_control(clock_select, mode, power_mode, ref_en, not_cs_en, data_status, cont_read)
+        (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
+        self.assertEqual(0x0001, value)
+        self.assertEqual(0xff, status)
 
     # def _test_read_one_conversion(self):
     #     """ Set up the ADC to do a single conversion.
@@ -59,34 +75,6 @@ class TestAD7214Driver(unittest.TestCase):
     #         value = self.ad7124.read_data_wait()
     #         time.sleep(1)
 
-    # def test_start_continuous_read(self):
-    #     """ Test thread start, read and stop.
-    #     Then test get_values().
-    #     """
-    #     # Start
-    #     self.ad7124.start_continuous_read()
-    #     # Wait for a few results to be queued.
-    #     time.sleep(5)
-    #     # Stop
-    #     self.ad7124.stop_continuous_read()
-    #     # Get the values.
-    #     values = self.ad7124.get_values()
-    #     num_values = len(values)
-    #     # Check that more than zero values have been written.
-    #     self.assertLess(5, num_values)
-    #     print("Count: ", num_values)
-    #     for value in values:
-    #         time_str = value[0].isoformat()
-    #         print(time_str, value[1], value[2])
-
-    # def test_read_register_status(self):
-    #     """ Read the CH1 register with status.
-    #     Should be 0x0001 and 0xff.
-    #     """
-    #     result = self._spi.read_register_status(self._pi,
-    #                                             AD7124RegNames.CH1_MAP_REG)
-    #     self.assertEqual(0x0001, result[0])
-    #     self.assertEqual(0xff, result[1])
 
 
 

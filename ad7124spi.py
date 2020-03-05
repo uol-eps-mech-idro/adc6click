@@ -46,6 +46,11 @@ class AD7124SPI:
         self._spi_handle = self._pi.spi_open(
             spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
 
+    def __del__(self):
+        """ Tidy up before being destroyed. """
+        self._pi.spi_close(self._spi_handle)
+        self._pi.stop()
+
     def read_register(self, to_send):
         """ Performs a SPI read using the to_send data.
         :param to_send: The bytes to send.
@@ -53,7 +58,7 @@ class AD7124SPI:
         """
         print("read_register: to_send:", bytes_to_string(to_send))
         (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
-        print("read_register: data:", bytes_to_string(data))
+        print("read_register: count:", count, "data:", bytes_to_string(data))
         return (count, data)
 
     def write_register(self, to_send):
