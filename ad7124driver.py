@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ AD7124-8 driver.
-Hides the AD7124 details from the user.
+Provides functions to read and write to any register and to configure
+the AD7124.
 """
 
 import time
@@ -133,7 +134,6 @@ class AD7124Driver:
         active_channel &= 0x0f
         return (ready, error, power_on_reset, active_channel)
 
-
     def read_register_with_status(self, register_enum):
         """ Returns a tuple of the value read from the register as an
         int value and the value of the status register.
@@ -148,11 +148,35 @@ class AD7124Driver:
               "status: ", hex(status))
         return (value, status)
 
-    def set_config_register(self, register_enum, bipolar = True, burnout = 0,
-                            ref_buf_p = False, ref_buf_m = False,
-                            ain_buf_p = True, ain_buf_m = True,
-                            ref_sel = 0, pga = 0):
-        """ Sets the config register.
+    def set_channel_register(self, register_enum, enable, setup, ainp, ainm):
+        """ Sets the given channel register using the given values.
+        :param register_enum: The register to set,
+            e.g. AD7124RegNames.CH0_MAP_REG.
+        :param enable: True to enable the channel.
+        :param setup: Number of the setup to use.
+        :param ainp: Positive input to use.
+        :param ainm: Negative input to use.
+        """
+        # The value contains 16 bits.
+        value = 0
+        # bits 4:0
+        value |= (ainm & 0x1f)
+        # bits 9:5
+        value |= ((ainp & 0x1f) << 5)
+        # bits 14:12
+        value |= ((setup & 0x07) << 12)
+        # bit 15
+        if enabled:
+            value |= 0x8000
+        # Write to the register
+        print("set_channel_register value:", hex(value))
+        self.write_register(register_enum, value)
+
+    def set_setup_config(self, register_enum, bipolar = True, burnout = 0,
+                         ref_buf_p = False, ref_buf_m = False,
+                         ain_buf_p = True, ain_buf_m = True,
+                         ref_sel = 0, pga = 0):
+        """ Sets the config register for the setup.
         Defaults set default value in datasheet, 0x0860
         :param register_enum: The register to set, e.g. AD7124RegNames.CFG0_REG.
         :param bipolar: True for bipolar, False for unipolar.
@@ -183,10 +207,10 @@ class AD7124Driver:
         print("set_config_register value:", hex(value))
         self.write_register(register_enum, value)
 
-    def set_filter_register(self, register_enum, filter_type = 0, rej60 = False,
-                            post_filter = 6, single_cycle = False,
-                            output_data_rate = 0x180):
-        """ Sets the config filter register.
+    def set_setup_filter(self, register_enum, filter_type = 0, rej60 = False,
+                         post_filter = 6, single_cycle = False,
+                         output_data_rate = 0x180):
+        """ Sets the filter register for the setup.
         Defaults set default value in datasheet, 0x060180
         :param register_enum: The register to set, e.g. AD7124RegNames.FILT0_REG.
         :param filter_type: See datasheet for values.
@@ -233,6 +257,7 @@ class AD7124Driver:
         value |= (clock_select & 0x03)
         print("set_control_register value:", hex(value))
         self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
+
 
     # def set_error_register(self, value):
     #     """ Set the ERROR_EN register.
