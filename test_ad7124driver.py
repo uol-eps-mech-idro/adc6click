@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """ Unit tests for the AD7124 driver. """
 
-import time
 import unittest
 from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
@@ -60,7 +59,9 @@ class TestAD7214Driver(unittest.TestCase):
         not_cs_en = False  # Controls DOUT/!RDY pin behaviour.
         data_status = True  # Enable data status output.
         cont_read = False  # Continuous conversion.
-        self.ad7124.set_adc_control(clock_select, mode, power_mode, ref_en, not_cs_en, data_status, cont_read)
+        self.ad7124.set_adc_control_register(clock_select, mode, power_mode,
+                                             ref_en, not_cs_en, data_status,
+                                             cont_read)
         (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
         self.assertEqual(0x0001, value)
         self.assertEqual(0xff, status)
@@ -74,8 +75,6 @@ class TestAD7214Driver(unittest.TestCase):
     #     for _ in range(0,10):
     #         value = self.ad7124.read_data_wait()
     #         time.sleep(1)
-
-
 
 
 if __name__ == '__main__':

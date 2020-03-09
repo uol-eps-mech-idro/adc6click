@@ -45,7 +45,6 @@ class AD7124Driver:
         command = self._build_command(register_enum, True)
         to_send.append(command)
         # Send correct number of padding bytes to get result.
-        size = self._registers.size(register_enum)
         num_bytes = self._registers.size(register_enum)
         if status_byte:
             num_bytes += 1
@@ -149,8 +148,68 @@ class AD7124Driver:
               "status: ", hex(status))
         return (value, status)
 
-    def set_adc_control(self, clock_select, mode, power_mode,
-                              ref_en, not_cs_en, data_status, cont_read):
+    def set_config_register(self, register_enum, bipolar = True, burnout = 0,
+                            ref_buf_p = False, ref_buf_m = False,
+                            ain_buf_p = True, ain_buf_m = True,
+                            ref_sel = 0, pga = 0):
+        """ Sets the config register.
+        Defaults set default value in datasheet, 0x0860
+        :param register_enum: The register to set, e.g. AD7124RegNames.CFG0_REG.
+        :param bipolar: True for bipolar, False for unipolar.
+        :param burnout: Range 0 to 3. 0 is off.
+        :param ref_buf_p: True enabled.
+        :param ref_buf_m: True enabled.
+        :param ain_buf_p: True enabled.
+        :param ain_buf_m: True enabled.
+        :param ref_sel: The reference voltage to use. 0 (default) is REFIN1.
+        :param pga: Gain select bits. 0 = gain of 1 (default).
+        """
+        # The configuration register is 16 bits, MSB first.
+        # bits 15:12 must be 0.
+        value = 0
+        if bipolar:
+            value |= 0x0800
+        value |= ((burnout & 0x03) << 9)
+        if ref_buf_p:
+            value |= 0x0100
+        if ref_buf_m:
+            value |= 0x0080
+        if ain_buf_p:
+            value |= 0x0040
+        if ain_buf_m:
+            value |= 0x0020
+        value |= ((ref_sel & 0x03) << 3)
+        value |= (pga & 0x07)
+        print("set_config_register value:", hex(value))
+        self.write_register(register_enum, value)
+
+    def set_filter_register(self, register_enum, filter_type = 0, rej60 = False,
+                            post_filter = 6, single_cycle = False,
+                            output_data_rate = 0x180):
+        """ Sets the config filter register.
+        Defaults set default value in datasheet, 0x060180
+        :param register_enum: The register to set, e.g. AD7124RegNames.FILT0_REG.
+        :param filter_type: See datasheet for values.
+        :param rej60: True is enabled.
+        :param post_filter: See datasheet for values.
+        :param single_cycle: True is enabled.
+        :param output_data_rate: Range 1 to 2047. 1 is fastest but noisiest.
+        """
+        # The configuration register is 24 bits, MSB first.
+        # bits 15:11 must be 0.
+        value = 0
+        value |= ((filter_type & 0x07) << 21)
+        if rej60:
+            value |= 0x100000
+        value |= ((post_filter & 0x07) << 17)
+        if single_cycle:
+            value |= 0x010000
+        value |= (output_data_rate & 0x7ff)
+        print("set_filter_register value:", hex(value))
+        self.write_register(register_enum, value)
+
+    def set_adc_control_register(self, clock_select, mode, power_mode,
+                                 ref_en, not_cs_en, data_status, cont_read):
         """ Writes to the ADC control register.
         Default value of the register is 0x0000 so defaults of 0 work.
         """
@@ -167,7 +226,7 @@ class AD7124Driver:
         value |= ((power_mode & 0x03) << 6)
         value |= ((mode & 0x0f) << 2)
         value |= (clock_select & 0x03)
-        print("_set_control_register to_send", hex(value))
+        print("set_control_register value:", hex(value))
         self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
 
     # def set_error_register(self, value):

@@ -1,12 +1,13 @@
-""" Class that defines the registers used by the AD7124.
+""" Classes that define the registers used by the AD7124.
 """
 
-from enum import Enum
+from enum import IntEnum
 
 
-class AD7124RegNames(Enum):
-
-    # List of all register names
+class AD7124RegNames(IntEnum):
+    """ List of all register names.
+    IntEnum is used so that basic maths can be done.
+    """
     COMM_REG = 0x00
     STATUS_REG = 0x00
     ADC_CTRL_REG = 0x01
@@ -131,7 +132,7 @@ class AD7124Registers:
 
     # Getters
     def initial(self, register_enum):
-        print("registers.initial:", register_enum)
+        # print("registers.initial:", register_enum)
         return self._registers[register_enum.value][0]
 
     def size(self, register_enum):
@@ -140,5 +141,5 @@ class AD7124Registers:
 
     def access(self, register_enum):
         """ Returns access type, 1 is write, 2 is read. """
-        print("registers.access:", register_enum)
+        # print("registers.access:", register_enum)
         return self._registers[register_enum.value][2]
