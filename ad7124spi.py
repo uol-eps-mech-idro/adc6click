@@ -18,8 +18,8 @@ class AD7124SPI:
     """
     # Values for SPI communications.  All other values are default.
     # Max SPI baud rate is 5MHz.
-    # AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
-    AD7124_SPI_BAUD_RATE = 32 * 1000
+    AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
+    # AD7124_SPI_BAUD_RATE = 32 * 1000 # for debugging only.
     AD7124_SPI_MODE = 0b00  # Mode 3
 
     def __init__(self, position):

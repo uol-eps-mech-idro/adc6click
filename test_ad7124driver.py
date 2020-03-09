@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Unit tests for the AD7124 driver. """
 
+import time
 import unittest
 from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
@@ -34,9 +35,13 @@ class TestAD7214Driver(unittest.TestCase):
 
     def test_read_status(self):
         """ Verifies the status register.
-        After a reset, power on reset will be True.
-        The other values should be False, False, 0.
+        Because we have done a reset, power_on_reset should always be
+        True.  The other values should be false and active_channel = 0.
         """
+        # Do a reset to ensure that power_on_reset is always false.
+        self.ad7124.reset()
+        time.sleep(0.01)
+        # Read the status register.
         status = self.ad7124.read_status()
         # print("trs", status)
         ready = status[0]
@@ -59,9 +64,10 @@ class TestAD7214Driver(unittest.TestCase):
         not_cs_en = False  # Controls DOUT/!RDY pin behaviour.
         data_status = True  # Enable data status output.
         cont_read = False  # Continuous conversion.
-        self.ad7124.set_adc_control_register(clock_select, mode, power_mode,
-                                             ref_en, not_cs_en, data_status,
-                                             cont_read)
+        dout_rdy_del = False  # No data ready delay.
+        self.ad7124.set_adc_control_register(dout_rdy_del, cont_read,
+                                             data_status, not_cs_en, ref_en,
+                                             power_mode, mode, clock_select)
         (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
         self.assertEqual(0x0001, value)
         self.assertEqual(0xff, status)

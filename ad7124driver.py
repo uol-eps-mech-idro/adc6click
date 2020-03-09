@@ -208,13 +208,18 @@ class AD7124Driver:
         print("set_filter_register value:", hex(value))
         self.write_register(register_enum, value)
 
-    def set_adc_control_register(self, clock_select, mode, power_mode,
-                                 ref_en, not_cs_en, data_status, cont_read):
+    def set_adc_control_register(self, dout_rdy_del = False, cont_read = False,
+                                 data_status = False, not_cs_en = False,
+                                 ref_en = False, power_mode = 0, mode = 0,
+                                 clock_select = 0):
         """ Writes to the ADC control register.
         Default value of the register is 0x0000 so defaults of 0 work.
         """
         value = 0
         # The control register is 16 bits, MSB first.
+        # Bits 15:13 must be 0.
+        if dout_rdy_del:
+            value |= 0x1000
         if cont_read:
             value |= 0x0800
         if data_status:
