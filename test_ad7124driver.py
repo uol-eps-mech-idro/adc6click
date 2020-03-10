@@ -56,9 +56,9 @@ class TestAD7214Driver(unittest.TestCase):
     def test_read_register_with_status(self):
         """ Read the CH1 register with status.
         Expected results: 0x0001 and 0xff.
-        Indirectly tests set_adc_control_register.
+        Indirectly tests set_adc_control.
         """
-        self.ad7124.set_adc_control_register(
+        self.ad7124.set_adc_control(
             dout_rdy_del=False,  # No data ready delay.
             cont_read=False,  # Continuous conversion.
             data_status=True,  # Enable data status output.
@@ -141,7 +141,7 @@ class TestAD7214Driver(unittest.TestCase):
                                      single_cycle=True,
                                      output_data_rate=0x200)
         value = self.ad7124.read_register(register_enum)
-        expected =  0x000000  # Filter type
+        expected = 0x000000  # Filter type
         expected += 0x100000  # rej60
         expected += 0x000000  # Post filter
         expected += 0x010000  # Single cycle
@@ -157,7 +157,7 @@ class TestAD7214Driver(unittest.TestCase):
                                      single_cycle=False,
                                      output_data_rate=2047)
         value = self.ad7124.read_register(register_enum)
-        expected =  0xe00000  # Filter type
+        expected = 0xe00000  # Filter type
         expected += 0x000000  # rej60
         expected += 0x0c0000  # Post filter
         expected += 0x000000  # Single cycle
@@ -169,14 +169,13 @@ class TestAD7214Driver(unittest.TestCase):
         """
         # Put into standby mode otherwise registers cannot be written to.
         # Use defaults for all but mode.
-        self.ad7124.set_adc_control_register(mode=0b0010)
+        self.ad7124.set_adc_control(mode=0b0010)
         # Offset 2, 0x123456
         register_enum = AD7124RegNames.OFFS2_REG
         new_value = 0x123456
         self.ad7124.set_setup_offset(register_enum, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
-        ## value = 0xcc0180
         # Offset6, 0xbeef00
         register_enum = AD7124RegNames.OFFS6_REG
         new_value = 0xbeef00
@@ -189,7 +188,7 @@ class TestAD7214Driver(unittest.TestCase):
         """
         # Put into idle mode otherwise registers cannot be written to.
         # Use defaults for all but mode.
-        self.ad7124.set_adc_control_register(mode=0b100)
+        self.ad7124.set_adc_control(mode=0b100)
         # Gain 2, 0x123456
         register_enum = AD7124RegNames.GAIN2_REG
         new_value = 0x123456
@@ -202,6 +201,66 @@ class TestAD7214Driver(unittest.TestCase):
         self.ad7124.set_setup_gain(register_enum, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
+
+    def test_set_adc_control(self):
+        """ Test the ADC CONTROL register with various combinations.
+        """
+        # Verify default values.
+        self.ad7124.set_adc_control()
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0000
+        self.assertEqual(expected, value)
+        # Set each single bit value in turn.
+        # DATA_READY bit 12
+        self.ad7124.set_adc_control(dout_rdy_del=True)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x1000
+        self.assertEqual(expected, value)
+        # CONT_READ can't be directly tested as it puts the ADC into
+        # continuous read mode. 0xffff is returned when this happens.
+        self.ad7124.set_adc_control(cont_read=True)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0xffff
+        self.assertEqual(expected, value)
+        # Do a reset so we can read the registers again.
+        self.ad7124.reset()
+        # DATA_STATUS bit 10
+        self.ad7124.set_adc_control(data_status=True)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0400
+        self.assertEqual(expected, value)
+        # NOT CS_NE bit 9
+        self.ad7124.set_adc_control(not_cs_en=True)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0200
+        self.assertEqual(expected, value)
+        # REF_EN bit 8
+        self.ad7124.set_adc_control(ref_en=True)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0100
+        self.assertEqual(expected, value)
+        # POWER_MODE bits 7:6
+        self.ad7124.set_adc_control(power_mode=0b11)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x00c0
+        self.assertEqual(expected, value)
+        # Mode bits 5:2
+        # Full scale calibration.  Resets after completion so will return 0.
+        self.ad7124.set_adc_control(mode=0b1000)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0020
+        self.assertEqual(expected, value)
+        # Power down mode.
+        self.ad7124.set_adc_control(mode=0b0011)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x000c
+        self.assertEqual(expected, value)
+        # CLK_SEL bits 1:0. External clock.
+        self.ad7124.set_adc_control(clock_select=0b11)
+        value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
+        expected = 0x0003
+        self.assertEqual(expected, value)
+
 
 if __name__ == '__main__':
     unittest.main()

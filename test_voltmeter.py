@@ -90,7 +90,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
         value = self._driver.read_register(register)
         self.assertEqual(0x8001, value)
         # ADC control register
-        self._driver.set_adc_control_register(
+        self._driver.set_adc_control(
             data_status=True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
             not_cs_en=True,  # 9 _ADC6_CONTROL_DOUT_PIN_ENABLE
             ref_en=True,  # 8 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE

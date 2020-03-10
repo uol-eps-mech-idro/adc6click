@@ -276,10 +276,9 @@ class AD7124Driver:
         print("set_gain_register value:", hex(value))
         self.write_register(register_enum, value)
 
-    def set_adc_control_register(self, dout_rdy_del=False, cont_read=False,
-                                 data_status=False, not_cs_en=False,
-                                 ref_en=False, power_mode=0, mode=0,
-                                 clock_select=0):
+    def set_adc_control(self, dout_rdy_del=False, cont_read=False,
+                        data_status=False, not_cs_en=False, ref_en=False,
+                        power_mode=0, mode=0, clock_select=0):
         """ Writes to the ADC control register.
         Default value of the register is 0x0000 so defaults of 0 work.
         """
