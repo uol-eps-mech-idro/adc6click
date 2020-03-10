@@ -58,23 +58,15 @@ class TestAD7214Driver(unittest.TestCase):
         Expected results: 0x0001 and 0xff.
         Indirectly tests set_adc_control_register.
         """
-
-
-
-
-
-
-
-
         self.ad7124.set_adc_control_register(
-            dout_rdy_del = False, # No data ready delay.
-            cont_read = False,  # Continuous conversion.
-            data_status = True,  # Enable data status output.
-            not_cs_en = False,  # Controls DOUT/!RDY pin behaviour.
-            ref_en = True,  # Internal reference enabled.
-            power_mode = 3,  # Full power mode.
-            mode = 0,  # Continuous conversion mode.
-            clock_select = 0  # Internal clock.
+            dout_rdy_del=False, # No data ready delay.
+            cont_read=False,  # Continuous conversion.
+            data_status=True,  # Enable data status output.
+            not_cs_en=False,  # Controls DOUT/!RDY pin behaviour.
+            ref_en=True,  # Internal reference enabled.
+            power_mode=3,  # Full power mode.
+            mode=0,  # Continuous conversion mode.
+            clock_select=0  # Internal clock.
         )
         (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
         self.assertEqual(0x0001, value)
@@ -84,14 +76,26 @@ class TestAD7214Driver(unittest.TestCase):
         """ Set a channel registers with various values.
         Verify that the values read back are the same as written.
         """
-
-        register_enum = AD7124RegNames.CH2_MAP_REG
-        self.ad7124.set_channel(register_enum, enable = True, setup = 3,
-                                ainp = , ainm)
-
-        value = self.ad7124.read_register(AD7124RegNames.CH2_MAP_REG)
-        self.assertEqual(0x0001, value)
-
+        # Enable channel 3 using setup 3 pins 6 and 7.
+        register_enum = AD7124RegNames.CH3_MAP_REG
+        self.ad7124.set_channel(register_enum, enable=True, setup=3,
+                                ainp=6, ainm=7)
+        value = self.ad7124.read_register(register_enum)
+        expected = 0x8000   # Enable
+        expected += 0x3000  # Setup
+        expected += 0x00c0  # AINP
+        expected += 0x0007  # AINM
+        self.assertEqual(expected, value)
+        # Enable channel 15 using setup 7 for reading internal temperature.
+        register_enum = AD7124RegNames.CH15_MAP_REG
+        self.ad7124.set_channel(register_enum, enable=True, setup=7,
+                                ainp=16, ainm=16)
+        value = self.ad7124.read_register(register_enum)
+        expected = 0x8000
+        expected += 0x7000
+        expected += 0x0200
+        expected += 0x0010
+        self.assertEqual(expected, value)
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ class AD7124Driver:
         self.reset()
         # Check correct device is present.
         ad7124_id = self.read_id()
-        print("init id", hex(ad7124_id))
+        # print("init id", hex(ad7124_id))
         if ad7124_id not in (0x14, 0x16):
             raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
 
@@ -53,7 +53,7 @@ class AD7124Driver:
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
         (count, result) = self._spi.read_register(to_send)
-        print("_read_register: count", count, "data", result)
+        # print("_read_register: count", count, "data", result)
         return result
 
     def _data_to_int(_, data):
@@ -102,7 +102,7 @@ class AD7124Driver:
         value_bytes = value.to_bytes(num_bytes, byteorder='big')
         to_send += value_bytes
         # Print to_send as hex values for easier debugging.
-        print("write_register: to_send", bytes_to_string(to_send))
+        # print("write_register: to_send", bytes_to_string(to_send))
         # Write the data.
         self._spi.write_register(to_send)
 
@@ -114,7 +114,7 @@ class AD7124Driver:
         """
         result = self._read_register(register_enum, False)
         value = self._data_to_int(result)
-        print("read_register: value", hex(value))
+        # print("read_register: value", hex(value))
         return value
 
     def read_status(self):
@@ -155,8 +155,8 @@ class AD7124Driver:
         # Status byte is the last byte.
         value = self._data_to_int(result[:-1])
         status = result[-1]
-        print("read_register_with_status: value:", hex(value),
-              "status: ", hex(status))
+        # print("read_register_with_status: value:", hex(value),
+        #       "status: ", hex(status))
         return (value, status)
 
     def set_channel(self, register_enum, enable, setup, ainp, ainm):
