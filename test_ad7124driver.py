@@ -313,6 +313,38 @@ class TestAD7214Driver(unittest.TestCase):
                                        bipolar=True, scale=10.0)
         self.assertAlmostEqual(expected, value, 5)
 
+    def _value_to_temperature(_, int_value):
+        """ Formula from data sheet. """
+        return ((int_value - 0x800000)/13584) - 272.5
+
+    def _temperature_to_value(_, temperature_c):
+        return int((((temperature_c + 272.5) * 13584) + 0x800000))
+
+    def test_to_temperature(self):
+        """ Test the convert to temperature function.
+        """
+        # 0 scale: -890C
+        expected = self._value_to_temperature(0x000000)
+        print("temp:", expected)
+        value = self.ad7124.to_temperature(int_value=0x0)
+        self.assertAlmostEqual(expected, value, 1)
+        # Half scale: -272.5C
+        expected = self._value_to_temperature(0x800000)
+        print("temp:", expected)
+        value = self.ad7124.to_temperature(int_value=0x800000)
+        self.assertAlmostEqual(expected, value, 5)
+        # Full scale: 345C
+        expected = self._value_to_temperature(0xffffff)
+        print("temp:", expected)
+        value = self.ad7124.to_temperature(int_value=0xffffff)
+        self.assertAlmostEqual(expected, value, 5)
+        # Room temp: 25C, int_value 0xbdaa18
+        expected = 25.0
+        int_value = self._temperature_to_value(expected)
+        print("temp:", expected, hex(int_value))
+        value = self.ad7124.to_temperature(int_value)
+        self.assertAlmostEqual(expected, value, 5)
+
 
 if __name__ == '__main__':
     unittest.main()
