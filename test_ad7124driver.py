@@ -59,7 +59,7 @@ class TestAD7214Driver(unittest.TestCase):
         Indirectly tests set_adc_control_register.
         """
         self.ad7124.set_adc_control_register(
-            dout_rdy_del=False, # No data ready delay.
+            dout_rdy_del=False,  # No data ready delay.
             cont_read=False,  # Continuous conversion.
             data_status=True,  # Enable data status output.
             not_cs_en=False,  # Controls DOUT/!RDY pin behaviour.
@@ -68,7 +68,8 @@ class TestAD7214Driver(unittest.TestCase):
             mode=0,  # Continuous conversion mode.
             clock_select=0  # Internal clock.
         )
-        (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
+        (value, status) = self.ad7124.read_register_with_status(
+                AD7124RegNames.CH1_MAP_REG)
         self.assertEqual(0x0001, value)
         self.assertEqual(0xff, status)
 
@@ -127,6 +128,41 @@ class TestAD7214Driver(unittest.TestCase):
         expected += 0x0000  # PGA = 1
         self.assertEqual(expected, value)
 
+    def test_set_setup_filter(self):
+        """ Set up two setup filter registers and verify results.
+        """
+        # Filter 2, sinc4, rej60, no post_filter, single_cycle,
+        # data rate = 0x200
+        register_enum = AD7124RegNames.FILT2_REG
+        self.ad7124.set_setup_filter(register_enum,
+                                     filter_type=0,
+                                     rej60=True,
+                                     post_filter=0,
+                                     single_cycle=True,
+                                     output_data_rate=0x200)
+        value = self.ad7124.read_register(register_enum)
+        expected =  0x000000  # Filter type
+        expected += 0x100000  # rej60
+        expected += 0x000000  # Post filter
+        expected += 0x010000  # Single cycle
+        expected += 0x000200  # Data rate
+        self.assertEqual(expected, value)
+        # Filter 7, post filter enabled, post_filter = 6,
+        # data rate = 2047 (slowest)
+        register_enum = AD7124RegNames.FILT7_REG
+        self.ad7124.set_setup_filter(register_enum,
+                                     filter_type=0b111,
+                                     rej60=False,
+                                     post_filter=0b110,
+                                     single_cycle=False,
+                                     output_data_rate=2047)
+        value = self.ad7124.read_register(register_enum)
+        expected =  0xe00000  # Filter type
+        expected += 0x000000  # rej60
+        expected += 0x0c0000  # Post filter
+        expected += 0x000000  # Single cycle
+        expected += 0x0007ff  # Data rate
+        self.assertEqual(expected, value)
 
 
 if __name__ == '__main__':
