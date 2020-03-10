@@ -97,6 +97,37 @@ class TestAD7214Driver(unittest.TestCase):
         expected += 0x0010
         self.assertEqual(expected, value)
 
+    def test_set_setup_config(self):
+        """ Set up two setup config registers and verify results.
+        """
+        # Setup 2, unipolar, burnout 2uA, all bufs on, ref 1, gain = 8.
+        register_enum = AD7124RegNames.CFG2_REG
+        self.ad7124.set_setup_config(register_enum, bipolar=False, burnout=2,
+                                     ref_buf_p=True, ref_buf_m=True,
+                                     ain_buf_p=True, ain_buf_m=True,
+                                     ref_sel=0, pga=0b011)
+        value = self.ad7124.read_register(register_enum)
+        expected = 0x0000   # Bipolar off
+        expected += 0x0400  # Burnout
+        expected += 0x01e0  # All bufs on
+        expected += 0x0000  # Ref sel
+        expected += 0x0003  # PGA = 8
+        self.assertEqual(expected, value)
+        # Setup 7, bipolar, no burnout, all bufs off, internal ref, gain = 1.
+        register_enum = AD7124RegNames.CFG7_REG
+        self.ad7124.set_setup_config(register_enum, bipolar=True,
+                                     ref_buf_p=False, ref_buf_m=False,
+                                     ain_buf_p=False, ain_buf_m=False,
+                                     ref_sel=0b10, pga=0)
+        value = self.ad7124.read_register(register_enum)
+        expected = 0x0800   # Bipolar on
+        expected += 0x0000  # Burnout
+        expected += 0x0000  # All bufs off
+        expected += 0x0010  # Ref sel
+        expected += 0x0000  # PGA = 1
+        self.assertEqual(expected, value)
+
+
 
 if __name__ == '__main__':
     unittest.main()
