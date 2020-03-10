@@ -19,30 +19,6 @@ class TestAD7214Voltmeter(unittest.TestCase):
         position = 1
         self._driver = AD7124Driver(position)
 
-    def _to_voltage(_, int_value, gain, vref, bipolar, scale):
-        """ Data sheet says:
-        code = (2^N x AIN x Gain) / VRef
-        Differential voltage: 0 = 0x000000, midscale = 0x80000,
-            fullscale = 0xffffff
-        code = 2^N-1 x [(AIN x Gain) / VRef + 1]
-        Differential voltage: negative fullscale = 0x000000,
-            0V = 0x80000, positive fullscale = 0xffffff
-        where:
-        N = 24
-        AIN is the analogue input voltage.
-        Gain is the gain setting (1 to 128).
-        """
-        voltage = 0.0
-        float_value = float(int_value) * float(vref)
-        if (bipolar):
-            voltage = float_value / float(0x800000)
-            voltage -= float(vref)
-        else:
-            voltage = float_value / float(0xFFFFFF)
-        voltage *= float(gain)
-        # voltage *= scale
-        return voltage
-
     def _init_adc(self):
         """ Setup ADC.  These values are taken from the Mikro example code.
             adc6_resetDevice();
@@ -134,8 +110,8 @@ class TestAD7214Voltmeter(unittest.TestCase):
             (int_value, status) = self._driver.read_register_with_status(
                 AD7124RegNames.DATA_REG)
             if status == 0x10:
-                voltage = self._to_voltage(int_value, gain, vref, bipolar,
-                                           scale)
+                voltage = self._driver.to_voltage(int_value, gain, vref,
+                                                  bipolar, scale)
                 print("Voltage: {:2.8}".format(voltage))
                 valid_readings += 1
             else:

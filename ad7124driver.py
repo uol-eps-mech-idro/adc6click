@@ -301,6 +301,49 @@ class AD7124Driver:
         print("set_control_register value:", hex(value))
         self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
 
+    def to_voltage(_, int_value, gain, vref, bipolar, scale):
+        """ Converts integer value to a voltage.
+        :param int_value: the value to convert.
+        :param gain: The PGA gain value, 1 to 128.
+        :param vref: The reference voltage, normally +1.25V or +2.5V.
+        :param bipolar: True for bipolar, else unipolar.
+        :param scale: A scaling factor used for external potential division.
+        Data sheet says::
+            code = (2^N x AIN x Gain) / VRef
+            Differential voltage: 0 = 0x000000, midscale = 0x80000,
+                fullscale = 0xffffff
+            code = 2^N-1 x [(AIN x Gain) / VRef + 1]
+            Differential voltage: negative fullscale = 0x000000,
+                0V = 0x80000, positive fullscale = 0xffffff
+            where:
+            N = 24
+            AIN is the analogue input voltage.
+            Gain is the gain setting (1 to 128).
+        """
+        voltage = 0.0
+        float_value = float(int_value) * float(vref)
+        if (bipolar):
+            voltage = float_value / float(0x800000)
+            voltage -= float(vref)
+        else:
+            voltage = float_value / float(0xFFFFFF)
+        voltage /= float(gain)
+        voltage *= scale
+        return voltage
+
+    def to_temperature(_, int_value):
+        """ Convert ADC value to temperature in degrees Celcius.
+        """
+        temperature_c = 0.0
+        int_value -= 0x800000
+        # print("channel.read: B", hex(int_value))
+        temperature_c = float(int_value)
+        temperature_c /= 13584
+        # print("channel.read: C", value)
+        temperature_c -= 272.5
+        # print("channel.read: D", value)
+        return temperature_c
+
     # def set_error_register(self, value):
     #     """ Set the ERROR_EN register.
     #     :param value: The value to set (24 bits).
@@ -328,26 +371,3 @@ class AD7124Driver:
     #                                            AD7124RegNames.DATA_REG)
     #     print("read_data_wait:", hex(value[0]), hex(value[1]))
     #     return value[0]
-
-    # def to_voltage(_, int_value, gain, vref, bipolar, scale):
-    #     voltage = 0.0
-    #     if (bipolar):
-    #         voltage = float(int_value / (0x7FFFFF - 1))
-    #     else:
-    #         voltage = float(int_value / 0xFFFFFF)
-    #     voltage = voltage * vref / float(gain)
-    #     voltage *= scale
-    #     return voltage
-
-    # def to_temperature(self, int_value):
-    #     """ Convert ADC value to temperature in degrees Celcius.
-    #     """
-    #     temperature_c = 0.0
-    #     int_value -= 0x800000
-    #     # print("channel.read: B", hex(int_value))
-    #     temperature_c = float(int_value)
-    #     temperature_c /= 13584
-    #     # print("channel.read: C", value)
-    #     temperature_c -= 272.5
-    #     # print("channel.read: D", value)
-    #     return temperature_c

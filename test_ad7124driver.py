@@ -245,12 +245,16 @@ class TestAD7214Driver(unittest.TestCase):
         expected = 0x00c0
         self.assertEqual(expected, value)
         # Mode bits 5:2
-        # Full scale calibration.  Resets after completion so will return 0.
+        #  Full scale calibration.
         self.ad7124.set_adc_control(mode=0b1000)
+        #  This takes some time to update the value.
+        time.sleep(0.1)
         value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
         expected = 0x0020
         self.assertEqual(expected, value)
-        # Power down mode.
+        #  Give it a lot more time to complete.
+        time.sleep(1.0)
+        #  Power down mode.
         self.ad7124.set_adc_control(mode=0b0011)
         value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
         expected = 0x000c
@@ -260,6 +264,54 @@ class TestAD7214Driver(unittest.TestCase):
         value = self.ad7124.read_register(AD7124RegNames.ADC_CTRL_REG)
         expected = 0x0003
         self.assertEqual(expected, value)
+
+    def test_to_voltage(self):
+        """ Test the convert to voltage function.
+        """
+        # 0v unipolar
+        expected = 0.0
+        value = self.ad7124.to_voltage(int_value=0, gain=1, vref=2.50,
+                                       bipolar=False, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Mid scale unipolar
+        expected = 1.25
+        value = self.ad7124.to_voltage(int_value=0x800000, gain=1, vref=2.50,
+                                       bipolar=False, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Full scale unipolar
+        expected = 2.50
+        value = self.ad7124.to_voltage(int_value=0xffffff, gain=1, vref=2.50,
+                                       bipolar=False, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Max -ve bipolar
+        expected = -1.25
+        value = self.ad7124.to_voltage(int_value=0, gain=1, vref=1.25,
+                                       bipolar=True, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # 0v bipolar
+        expected = 0.0
+        value = self.ad7124.to_voltage(int_value=0x800000, gain=1, vref=1.25,
+                                       bipolar=True, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Max +ve bipolar
+        expected = +1.25
+        value = self.ad7124.to_voltage(int_value=0xffffff, gain=1, vref=1.25,
+                                       bipolar=True, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Max +ve bipolar with gain
+        expected = +1.25 / 16.0
+        value = self.ad7124.to_voltage(int_value=0xffffff, gain=16, vref=1.25,
+                                       bipolar=True, scale=1.0)
+        self.assertAlmostEqual(expected, value, 5)
+        # Max +ve bipolar scaled to +/-12.5V
+        expected = -12.5
+        value = self.ad7124.to_voltage(int_value=0x0, gain=1, vref=1.25,
+                                       bipolar=True, scale=10.0)
+        self.assertAlmostEqual(expected, value, 5)
+        expected = +12.5
+        value = self.ad7124.to_voltage(int_value=0xffffff, gain=1, vref=1.25,
+                                       bipolar=True, scale=10.0)
+        self.assertAlmostEqual(expected, value, 5)
 
 
 if __name__ == '__main__':
