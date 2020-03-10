@@ -55,32 +55,43 @@ class TestAD7214Driver(unittest.TestCase):
 
     def test_read_register_with_status(self):
         """ Read the CH1 register with status.
-        Should be 0x0001 and 0xff.
+        Expected results: 0x0001 and 0xff.
+        Indirectly tests set_adc_control_register.
         """
-        clock_select = 0  # Internal clock.
-        mode = 0  # Continuous conversion mode.
-        power_mode = 3  # Full power mode.
-        ref_en = True  # Internal reference enabled.
-        not_cs_en = False  # Controls DOUT/!RDY pin behaviour.
-        data_status = True  # Enable data status output.
-        cont_read = False  # Continuous conversion.
-        dout_rdy_del = False  # No data ready delay.
-        self.ad7124.set_adc_control_register(dout_rdy_del, cont_read,
-                                             data_status, not_cs_en, ref_en,
-                                             power_mode, mode, clock_select)
+
+
+
+
+
+
+
+
+        self.ad7124.set_adc_control_register(
+            dout_rdy_del = False, # No data ready delay.
+            cont_read = False,  # Continuous conversion.
+            data_status = True,  # Enable data status output.
+            not_cs_en = False,  # Controls DOUT/!RDY pin behaviour.
+            ref_en = True,  # Internal reference enabled.
+            power_mode = 3,  # Full power mode.
+            mode = 0,  # Continuous conversion mode.
+            clock_select = 0  # Internal clock.
+        )
         (value, status) = self.ad7124.read_register_with_status(AD7124RegNames.CH1_MAP_REG)
         self.assertEqual(0x0001, value)
         self.assertEqual(0xff, status)
 
-    # def _test_read_one_conversion(self):
-    #     """ Set up the ADC to do a single conversion.
-    #     Read the status register until a conversion occurs.
-    #     Read the value of the conversion.
-    #     """
-    #     value = self.ad7124.read_one_conversion()
-    #     for _ in range(0,10):
-    #         value = self.ad7124.read_data_wait()
-    #         time.sleep(1)
+    def test_set_channel(self):
+        """ Set a channel registers with various values.
+        Verify that the values read back are the same as written.
+        """
+
+        register_enum = AD7124RegNames.CH2_MAP_REG
+        self.ad7124.set_channel(register_enum, enable = True, setup = 3,
+                                ainp = , ainm)
+
+        value = self.ad7124.read_register(AD7124RegNames.CH2_MAP_REG)
+        self.assertEqual(0x0001, value)
+
 
 
 if __name__ == '__main__':

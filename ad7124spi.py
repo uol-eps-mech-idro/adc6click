@@ -67,4 +67,3 @@ class AD7124SPI:
         """
         print("write_register:", bytes_to_string(to_send))
         self._pi.spi_write(self._spi_handle, to_send)
-

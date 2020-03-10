@@ -117,7 +117,7 @@ need to be in time order.
 The test harnesses, files starting with "test_" are used to demonstrate how
 the code can be used.  These are run using `unittest.sh`.
 
-voltmeter.py is a little application that shows how the ADc can be used.
+voltmeter.py is a little application that shows how the ADC can be used.
 
 #### Hardware setup
 

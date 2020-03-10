@@ -4,7 +4,6 @@ This was used to work out how to read the registers of the AD7124 correctly.
 """
 
 import time
-import pigpio
 import unittest
 
 from ad7124driver import AD7124Driver
@@ -23,9 +22,11 @@ class TestAD7214Voltmeter(unittest.TestCase):
     def _to_voltage(_, int_value, gain, vref, bipolar, scale):
         """ Data sheet says:
         code = (2^N x AIN x Gain) / VRef
-        Differential voltage: 0 = 0x000000, midscale = 0x80000, fullscale = 0xffffff
+        Differential voltage: 0 = 0x000000, midscale = 0x80000,
+            fullscale = 0xffffff
         code = 2^N-1 x [(AIN x Gain) / VRef + 1]
-        Differential voltage: negative fullscale = 0x000000, 0V = 0x80000, positive fullscale = 0xffffff
+        Differential voltage: negative fullscale = 0x000000,
+            0V = 0x80000, positive fullscale = 0xffffff
         where:
         N = 24
         AIN is the analogue input voltage.
@@ -45,46 +46,55 @@ class TestAD7214Voltmeter(unittest.TestCase):
     def _init_adc(self):
         """ Setup ADC.  These values are taken from the Mikro example code.
             adc6_resetDevice();
-            adc6_writeReg( _ADC6_CONFIG_0_REG, _ADC6_CONFIG_ENABLE_BIPOLAR_OP |
-                _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP | _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM );
+            adc6_writeReg( _ADC6_CONFIG_0_REG,
+                _ADC6_CONFIG_ENABLE_BIPOLAR_OP |
+                _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP |
+                _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM );
             adc6_writeReg( _ADC6_CHANNEL_0_REG, _ADC6_ENABLE_CHANNEL |
                 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1 );
-            adc6_writeReg( _ADC6_CONTROL_REG, _ADC6_CONTROL_DATA_STATUS_ENABLE |
+            adc6_writeReg( _ADC6_CONTROL_REG,
+                _ADC6_CONTROL_DATA_STATUS_ENABLE |
                 _ADC6_CONTROL_DOUT_PIN_ENABLE |
                 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE |
                 _ADC6_CONTROL_FULL_POWER_MODE );
         """
         # Config 0
         register = AD7124RegNames.CFG0_REG
-        self._driver.set_config_register(register, bipolar = True,
-                                         ain_buf_p = True, ain_buf_m = True)
+        self._driver.set_setup_config(
+            register,
+            bipolar=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
+            ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
+            ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
+        )
         value = self._driver.read_register(register)
         self.assertEqual(0x860, value)
         # Configuration Filter Register
         register = AD7124RegNames.FILT0_REG
-        self._driver.set_filter_register(
+        self._driver.set_setup_filter(
             register,
-            filter_type = 0,  # SINC4
-            post_filter = 0,  # No post filter.
-            output_data_rate = 0x180  # Fastest is 0x001.
+            filter_type=0,  # SINC4
+            post_filter=0,  # No post filter.
+            output_data_rate=0x180  # Fastest is 0x001.
         )
         value = self._driver.read_register(register)
         self.assertEqual(0x000180, value)
         # Channel Register
         register = AD7124RegNames.CH0_MAP_REG
-        new_value = 0
-        new_value |= 0x8000  # 15 _ADC6_CONTROL_DATA_STATUS_ENABLE
-        new_value |= 0x0000  # 9:5 0b00000 _ADC6_CHANNEL_POSITIVE_ANALOG_INPUT_AIN0
-        new_value |= 0x0001  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
-        self._driver.write_register(register, new_value)
+        self._driver.set_channel(
+            register,
+            enable=True,  # 15 _ADC6_CONTROL_DATA_STATUS_ENABLE
+            setup=0,  # Setup 0.
+            ainp=0,  # 9:5 0b00000 _ADC6_CHANNEL_POSITIVE_ANALOG_INPUT_AIN0
+            ainm=1  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
+        )
         value = self._driver.read_register(register)
-        self.assertEqual(new_value, value)
+        self.assertEqual(0x8001, value)
         # ADC control register
         self._driver.set_adc_control_register(
-            data_status = True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
-            not_cs_en = True,  # 9 _ADC6_CONTROL_DOUT_PIN_ENABLE
-            ref_en = True,  # 8 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE
-            power_mode = 2  # 7,6 _ADC6_CONTROL_FULL_POWER_MODE
+            data_status=True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
+            not_cs_en=True,  # 9 _ADC6_CONTROL_DOUT_PIN_ENABLE
+            ref_en=True,  # 8 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE
+            power_mode=2  # 7,6 _ADC6_CONTROL_FULL_POWER_MODE
         )
         register = AD7124RegNames.ADC_CTRL_REG
         new_value = 0
@@ -121,9 +131,11 @@ class TestAD7214Voltmeter(unittest.TestCase):
             time.sleep(0.02)
             # Read data register with status.  Prevents duplicate readings as
             # status = 0x90 when reading the same data for the second time.
-            (int_value, status) = self._driver.read_register_with_status(AD7124RegNames.DATA_REG)
+            (int_value, status) = self._driver.read_register_with_status(
+                AD7124RegNames.DATA_REG)
             if status == 0x10:
-                voltage = self._to_voltage(int_value, gain, vref, bipolar, scale)
+                voltage = self._to_voltage(int_value, gain, vref, bipolar,
+                                           scale)
                 print("Voltage: {:2.8}".format(voltage))
                 valid_readings += 1
             else:
