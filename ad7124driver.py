@@ -180,7 +180,7 @@ class AD7124Driver:
         if enable:
             value |= 0x8000
         # Write to the register
-        print("set_channel_register value:", hex(value))
+        # print("set_channel_register value:", hex(value))
         self.write_register(register_enum, value)
 
     def set_setup_config(self, register_enum, bipolar=True, burnout=0,
@@ -216,7 +216,7 @@ class AD7124Driver:
             value |= 0x0020
         value |= ((ref_sel & 0x03) << 3)
         value |= (pga & 0x07)
-        print("set_config_register value:", hex(value))
+        # print("set_config_register value:", hex(value))
         self.write_register(register_enum, value)
 
     def set_setup_filter(self, register_enum, filter_type=0, rej60=False,
@@ -243,7 +243,7 @@ class AD7124Driver:
         if single_cycle:
             value |= 0x010000
         value |= (output_data_rate & 0x7ff)
-        print("set_filter_register value:", hex(value))
+        # print("set_filter_register value:", hex(value))
         self.write_register(register_enum, value)
 
     def set_setup_offset(self, register_enum, new_offset):

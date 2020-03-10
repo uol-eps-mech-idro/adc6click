@@ -164,6 +164,44 @@ class TestAD7214Driver(unittest.TestCase):
         expected += 0x0007ff  # Data rate
         self.assertEqual(expected, value)
 
+    def test_set_setup_offset(self):
+        """ Set up two setup offset registers and verify results.
+        """
+        # Put into standby mode otherwise registers cannot be written to.
+        # Use defaults for all but mode.
+        self.ad7124.set_adc_control_register(mode=0b0010)
+        # Offset 2, 0x123456
+        register_enum = AD7124RegNames.OFFS2_REG
+        new_value = 0x123456
+        self.ad7124.set_setup_offset(register_enum, new_value)
+        value = self.ad7124.read_register(register_enum)
+        self.assertEqual(new_value, value)
+        ## value = 0xcc0180
+        # Offset6, 0xbeef00
+        register_enum = AD7124RegNames.OFFS6_REG
+        new_value = 0xbeef00
+        self.ad7124.set_setup_offset(register_enum, new_value)
+        value = self.ad7124.read_register(register_enum)
+        self.assertEqual(new_value, value)
+
+    def test_set_setup_gain(self):
+        """ Set up two setup gain registers and verify results.
+        """
+        # Put into idle mode otherwise registers cannot be written to.
+        # Use defaults for all but mode.
+        self.ad7124.set_adc_control_register(mode=0b100)
+        # Gain 2, 0x123456
+        register_enum = AD7124RegNames.GAIN2_REG
+        new_value = 0x123456
+        self.ad7124.set_setup_gain(register_enum, new_value)
+        value = self.ad7124.read_register(register_enum)
+        self.assertEqual(new_value, value)
+        # Gain 6, 0xbeef00
+        register_enum = AD7124RegNames.GAIN6_REG
+        new_value = 0xbeef00
+        self.ad7124.set_setup_gain(register_enum, new_value)
+        value = self.ad7124.read_register(register_enum)
+        self.assertEqual(new_value, value)
 
 if __name__ == '__main__':
     unittest.main()
