@@ -189,17 +189,21 @@ class AD7124Driver:
         """
         # The channel registers are 16 bits, MSB first.
         value = 0
-        # bits 4:0
-        value |= (ainm & 0x1f)
-        # bits 9:5
-        value |= ((ainp & 0x1f) << 5)
-        # bits 14:12
-        value |= ((setup & 0x07) << 12)
         # bit 15
         if enable:
             value |= 0x8000
-        # Write to the register
         # print("set_channel_register value:", hex(value))
+        # bits 14:12
+        value |= ((setup & 0x07) << 12)
+        # print("set_channel_register value:", hex(value))
+        # bits 9:5
+        value |= ((ainp & 0x1f) << 5)
+        # print("set_channel_register ainp:", hex(ainp))
+        # print("set_channel_register value:", hex(value))
+        # bits 4:0
+        value |= (ainm & 0x1f)
+        # print("set_channel_register value:", hex(value))
+        # Write to the register
         self.write_register(register_enum, value)
 
     def set_setup_config(self, register_enum, bipolar=True, burnout=0,
@@ -353,14 +357,11 @@ class AD7124Driver:
     def to_temperature(_, int_value):
         """ Convert ADC value to temperature in degrees Celcius.
         """
-        temperature_c = 0.0
-        int_value -= 0x800000
-        # print("channel.read: B", hex(int_value))
-        temperature_c = float(int_value)
-        temperature_c /= 13584
-        # print("channel.read: C", value)
-        temperature_c -= 272.5
-        # print("channel.read: D", value)
+        # This is the formula in the data sheet but it doesn't work!
+        # Gives the result of -246.1C when room temperature is 23.0C.
+        # Also goes negative when finger applied to device (should warm up).
+        # temperature_c = (float(int_value - 0x800000) / 13584) - 272.5
+        temperature_c = float(int_value - 0x800000) / 13584
         return temperature_c
 
     # def set_error_register(self, value):
