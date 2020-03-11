@@ -73,6 +73,18 @@ class TestAD7214Driver(unittest.TestCase):
         self.assertEqual(0x0001, value)
         self.assertEqual(0xff, status)
 
+    def test_read_data_wait(self):
+        """ Verifies that the read_data_wait function works.
+        """
+        # Setup to read channel 0.
+        self.ad7124.set_channel(AD7124RegNames.CH0_MAP_REG, enable=True,
+                                setup=0, ainp=1, ainm=0)
+        # The setup registers are used with defaults.
+        # Read the data register.
+        (channel_number, int_value) = self.ad7124.read_data_wait()
+        self.assertEqual(0, channel_number)
+        self.assertEqual(0, int_value)
+
     def test_set_channel(self):
         """ Set a channel registers with various values.
         Verify that the values read back are the same as written.
@@ -325,23 +337,23 @@ class TestAD7214Driver(unittest.TestCase):
         """
         # 0 scale: -890C
         expected = self._value_to_temperature(0x000000)
-        print("temp:", expected)
+        # print("temp:", expected)
         value = self.ad7124.to_temperature(int_value=0x0)
         self.assertAlmostEqual(expected, value, 1)
         # Half scale: -272.5C
         expected = self._value_to_temperature(0x800000)
-        print("temp:", expected)
+        # print("temp:", expected)
         value = self.ad7124.to_temperature(int_value=0x800000)
         self.assertAlmostEqual(expected, value, 5)
         # Full scale: 345C
         expected = self._value_to_temperature(0xffffff)
-        print("temp:", expected)
+        # print("temp:", expected)
         value = self.ad7124.to_temperature(int_value=0xffffff)
         self.assertAlmostEqual(expected, value, 5)
         # Room temp: 25C, int_value 0xbdaa18
         expected = 25.0
         int_value = self._temperature_to_value(expected)
-        print("temp:", expected, hex(int_value))
+        # print("temp:", expected, hex(int_value))
         value = self.ad7124.to_temperature(int_value)
         self.assertAlmostEqual(expected, value, 5)
 

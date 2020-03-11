@@ -6,6 +6,7 @@ This file uses the AD7124Driver class to set up and control the AD7124 device.
 import time
 from optparse import OptionParser
 from ad7124driver import AD7124Driver
+from ad7124registers import AD7124RegNames
 
 
 class VoltmeterChannel:
@@ -49,15 +50,16 @@ class VoltmeterChannel:
             print("ERROR: ONLY CHANNEL 1 AND SUPPORTED")
             exit(-1)
         # Set the registers up
-        adc.set_setup_config(config_reg, bipolar=bipolar,
+        adc.set_setup_config(config_reg, bipolar=self._bipolar,
                              ref_buf_p=True, ref_buf_m=True,
                              ain_buf_p=True, ain_buf_m=True,
                              ref_sel=0, pga=0)
         # Filters are set up for speed so are less accurate.
-        adc.set_setup_filter(filter_reg,
-                             filter_type=0,  # SINC4
-                             post_filter=0,  # No post filter.
-                             output_data_rate=0x200  # Fastest is 0x001.
+        adc.set_setup_filter(
+            filter_reg,
+            filter_type=0,  # SINC4
+            post_filter=0,  # No post filter.
+            output_data_rate=0x200  # Fastest is 0x001.
         )
         adc.set_channel(channel_reg, enable=True, setup=setup,
                         ainp=positive_pin, ainm=negative_pin)
@@ -98,13 +100,15 @@ class Voltmeter:
         version = "%prog version " + self.VERSION
         parser = OptionParser(usage, version=version)
         parser.set_defaults(filename="ad7124.csv", output="console",
-                            position = 1)
+                            position=1)
         parser.add_option("-o", "--file", dest="filename",
                           help="Write to FILE.", metavar="FILE")
         parser.add_option("-f", "--format", dest="format",
                           help="format: csv, console. Default is '%default'.")
-        parser.add_option("-p", "--position", dest="1",
-                          help="Position of the ADC6Click: 1 or 2.  Default is '%default'.")
+        parser.add_option(
+            "-p", "--position", dest="1",
+            help="Position of the ADC6Click: 1 or 2.  Default is '%default'."
+        )
         parser.add_option("-v", "--verbose",
                           action="store_true", dest="verbose")
         (options, requested_channels) = parser.parse_args()
@@ -132,7 +136,6 @@ class Voltmeter:
                 self._csv = True
                 self._filename = options.filename
                 self._stdout = False
-
 
     def _initialise_adc(self):
         """ Initialise the ADC and configure to read the enabled

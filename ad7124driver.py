@@ -151,7 +151,7 @@ class AD7124Driver:
         :returns: A tuple of the value read from the register as an
         int value and the value of the status register.
         """
-        result = self._read_register(register_enum)
+        result = self._read_register(register_enum, True)
         # Status byte is the last byte.
         value = self._data_to_int(result[:-1])
         status = result[-1]
@@ -166,11 +166,11 @@ class AD7124Driver:
         ready = False
         start_time = time.time()
         while True:
-            (ready, error, _, channel_number) = self._read_status()
+            (ready, error, _, channel_number) = self.read_status()
             if ready and error == 0:
                 break
             else:
-                if time_time() > (start_time + timedelta(seconds=1)):
+                if time.time() > (start_time + 1):
                     # Break out of loop if stuck.
                     channel_number = -1
                     int_value = 0
@@ -277,7 +277,7 @@ class AD7124Driver:
         # The offset registers are 24 bits, MSB first.
         value = 0
         value |= (new_offset & 0xffffff)
-        print("set_setup_offset value:", hex(value))
+        # print("set_setup_offset value:", hex(value))
         self.write_register(register_enum, value)
 
     def set_setup_gain(self, register_enum, new_gain):
@@ -292,7 +292,7 @@ class AD7124Driver:
         # The gain registers are 24 bits, MSB first.
         value = 0
         value |= (new_gain & 0xffffff)
-        print("set_gain_register value:", hex(value))
+        # print("set_gain_register value:", hex(value))
         self.write_register(register_enum, value)
 
     def set_adc_control(self, dout_rdy_del=False, cont_read=False,
@@ -317,7 +317,7 @@ class AD7124Driver:
         value |= ((power_mode & 0x03) << 6)
         value |= ((mode & 0x0f) << 2)
         value |= (clock_select & 0x03)
-        print("set_control_register value:", hex(value))
+        # print("set_control_register value:", hex(value))
         self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
 
     def to_voltage(_, int_value, gain, vref, bipolar, scale):
@@ -368,4 +368,3 @@ class AD7124Driver:
     #     :param value: The value to set (24 bits).
     #     """
     #     self._spi.write_register(AD7124RegNames.ERREN_REG, value)
-

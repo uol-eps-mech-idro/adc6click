@@ -56,14 +56,14 @@ class AD7124SPI:
         :param to_send: The bytes to send.
         :returns: Tuple containing (count of bytes read, data as bytes).
         """
-        print("read_register: to_send:", bytes_to_string(to_send))
+        # print("read_register: to_send:", bytes_to_string(to_send))
         (count, data) = self._pi.spi_xfer(self._spi_handle, to_send)
-        print("read_register: count:", count, "data:", bytes_to_string(data))
+        # print("read_register: count:", count, "data:", bytes_to_string(data))
         return (count, data)
 
     def write_register(self, to_send):
         """ The bytes in to_send is wrtten to the SPI bus.
         :param to_send: The bytes to send.
         """
-        print("write_register:", bytes_to_string(to_send))
+        # print("write_register:", bytes_to_string(to_send))
         self._pi.spi_write(self._spi_handle, to_send)
