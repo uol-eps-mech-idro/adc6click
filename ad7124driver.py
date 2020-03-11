@@ -151,13 +151,32 @@ class AD7124Driver:
         :returns: A tuple of the value read from the register as an
         int value and the value of the status register.
         """
-        result = self._read_register(register_enum, True)
+        result = self._read_register(register_enum)
         # Status byte is the last byte.
         value = self._data_to_int(result[:-1])
         status = result[-1]
         # print("read_register_with_status: value:", hex(value),
         #       "status: ", hex(status))
         return (value, status)
+
+    def read_data_wait(self):
+        """ Waits for the data register to contain new data and then reads it.
+        :returns: Tuple containing channel_number and the raw value.
+        """
+        ready = False
+        start_time = time.time()
+        while True:
+            (ready, error, _, channel_number) = self._read_status()
+            if ready and error == 0:
+                break
+            else:
+                if time_time() > (start_time + timedelta(seconds=1)):
+                    # Break out of loop if stuck.
+                    channel_number = -1
+                    int_value = 0
+                    break
+        int_value = self.read_register(AD7124RegNames.DATA_REG)
+        return (channel_number, int_value)
 
     def set_channel(self, register_enum, enable, setup, ainp, ainm):
         """ Sets the given channel register using the given values.
@@ -350,24 +369,3 @@ class AD7124Driver:
     #     """
     #     self._spi.write_register(AD7124RegNames.ERREN_REG, value)
 
-    # def wait_for_data_ready(self):
-    #     """ Blocks until DOUT/!RDY goes low (RDY). """
-    #     # TODO
-    #     if True:
-    #         ready = False
-    #         for _ in range(0,300):
-    #             status = self._read_status()
-    #             ready = status[0]
-    #             if ready:
-    #                 break
-    #     else:
-    #         pass
-
-    # def read_data_wait(self):
-    #     """ Reads the data register.  Blocks until data is ready.
-    #     """
-    #     self._wait_for_data_ready()
-    #     value = self._spi.read_register_status(self._pi,
-    #                                            AD7124RegNames.DATA_REG)
-    #     print("read_data_wait:", hex(value[0]), hex(value[1]))
-    #     return value[0]

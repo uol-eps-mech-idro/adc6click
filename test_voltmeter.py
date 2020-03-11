@@ -38,7 +38,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
         register = AD7124RegNames.CFG0_REG
         self._driver.set_setup_config(
             register,
-            bipolar=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
+            enable=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
             ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
