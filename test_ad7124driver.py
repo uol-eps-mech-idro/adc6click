@@ -75,6 +75,8 @@ class TestAD7214Driver(unittest.TestCase):
 
     def test_read_data_wait(self):
         """ Verifies that the read_data_wait function works.
+        NOTE: If this test fails, make sure that AIN0 and AIN1 are both
+        grounded.
         """
         # Setup to read channel 0.
         self.ad7124.set_channel(AD7124RegNames.CH0_MAP_REG, enable=True,
@@ -89,6 +91,15 @@ class TestAD7214Driver(unittest.TestCase):
         """ Set a channel registers with various values.
         Verify that the values read back are the same as written.
         """
+        # print()
+        # Verify that all channels are disabled.
+        for channel in range(0, 16):
+            register_enum = AD7124RegNames(
+                            AD7124RegNames.CH0_MAP_REG.value + channel)
+            assert_msg = "channel: " + str(channel)
+            value = self.ad7124.read_register(register_enum)
+            # print("tsc: channel, value", channel, hex(value))
+            self.assertEqual(0x0001, value, assert_msg)
         # Enable channel 3 using setup 3 pins 6 and 7.
         register_enum = AD7124RegNames.CH3_MAP_REG
         self.ad7124.set_channel(register_enum, enable=True, setup=3,

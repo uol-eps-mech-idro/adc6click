@@ -14,7 +14,8 @@ class VoltmeterChannel:
     Not to be confused with the AD7124 channels!
     """
     # VREF is fixed by the hardware so do not change this!
-    VREF = 1.25
+    #VREF = 1.25
+    VREF = 2.5
 
     def __init__(self, number):
         self.number = number
@@ -79,9 +80,9 @@ class Voltmeter:
     VERSION = "0.1"
 
     def __init__(self):
+        self._stdout = True
         self._csv = False
         self._filename = ""
-        self._stdout = False
         # List of VoltmeterChannel instances.
         self._vm_channels = []
         self._position = 1
@@ -150,16 +151,10 @@ class Voltmeter:
         # power_mode 2 is full power so goes fastest.
         self._adc.set_adc_control(power_mode=2)
 
-    def _start_stats(self):
-        self._start_time = time.time()
-
-    def _write_stats(self):
-        time_taken = time.time() - self._start_time
-        print("Time taken: ", time_taken)
-        print("Readings: ", self._readings)
-        print("Readings per second: ", self._readings / time_taken)
-
     def _write_header(self):
+        self._readings = 0
+        self._start_time = time.time()
+        # TODO Improve output. Use "channel" for single channel etc.
         active_channel_string = ""
         for vm_channel in self._vm_channels:
             active_channel_string += str(vm_channel.number)
@@ -170,8 +165,10 @@ class Voltmeter:
             print("Open CSV file")
 
     def _write_value(self, channel_number, int_value):
+        self._readings += 1
         if self._stdout:
-            voltage = self._vm_channels[channel_number].to_voltage(int_value)
+            voltage = self._vm_channels[channel_number].to_voltage(self._adc,
+                                                                   int_value)
             print("{}, {:2.6}".format(channel_number, voltage))
         if self._csv:
             # TODO Write to file!
@@ -179,6 +176,10 @@ class Voltmeter:
 
     def _write_footer(self):
         print("Finished.")
+        time_taken = time.time() - self._start_time
+        print("Time taken: ", time_taken)
+        print("Readings: ", self._readings)
+        print("Readings per second: ", self._readings / time_taken)
         if self._csv:
             # TODO Close file
             print("CSV file closed")
@@ -190,18 +191,17 @@ class Voltmeter:
         print("Starting...")
         self._write_header()
         self._initialise_adc()
-        self._start_stats()
         # Try block handles ctrl+c nicely.
         try:
             while True:
                 # Read next value (blocks until data read)
                 (channel_number, int_value) = self._adc.read_data_wait()
+                # print("channel, int_value:", channel_number, hex(int_value))
                 # Write value to stdout/csv file.
                 self._write_value(channel_number, int_value)
         except KeyboardInterrupt:
             print("\nStopping...")
         finally:
-            self._write_stats()
             self._write_footer()
 
 

@@ -168,7 +168,8 @@ class AD7124Driver:
             (ready, error, _, channel_number) = self.read_status()
             if ready and error == 0:
                 int_value = self.read_register(AD7124RegNames.DATA_REG)
-                # print("rdw: int_value:", hex(int_value))
+                # print("rdw: int_value, channel", hex(int_value),
+                #       channel_number)
                 break
             else:
                 if time.time() > (start_time + 1):

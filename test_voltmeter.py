@@ -39,13 +39,12 @@ class TestAD7214Voltmeter(unittest.TestCase):
         register = AD7124RegNames.CFG0_REG
         self._driver.set_setup_config(
             register,
-            bipolar=False,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
+            bipolar=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
             ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
         value = self._driver.read_register(register)
-        # self.assertEqual(0x0860, value)
-        self.assertEqual(0x0060, value)
+        self.assertEqual(0x0860, value)
         # Configuration Filter Register
         register = AD7124RegNames.FILT0_REG
         self._driver.set_setup_filter(
@@ -67,6 +66,16 @@ class TestAD7214Voltmeter(unittest.TestCase):
         )
         value = self._driver.read_register(register)
         self.assertEqual(0x8001, value)
+        # Verify that all channels are disabled.
+        # This test was added because more than one channel was active.
+        # Never found the cause but it has gone away.
+        for channel in range(1, 16):
+            register_enum = AD7124RegNames(
+                            AD7124RegNames.CH0_MAP_REG.value + channel)
+            assert_msg = "channel: " + str(channel)
+            value = self._driver.read_register(register_enum)
+            # print("tv.ia: channel, value", channel, hex(value))
+            self.assertEqual(0x0001, value, assert_msg)
         # ADC control register
         self._driver.set_adc_control(
             data_status=True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
@@ -98,7 +107,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
         self._check_errors()
         gain = 1
         vref = 2.64
-        bipolar = False
+        bipolar = True
         scale = 1.0
         start_time = time.time()
         valid_readings = 0
@@ -111,9 +120,9 @@ class TestAD7214Voltmeter(unittest.TestCase):
             # status = 0x90 when reading the same data for the second time.
             (int_value, status) = self._driver.read_register_with_status(
                 AD7124RegNames.DATA_REG)
-            print("int_value, status", hex(int_value), hex(status))
+            # print("int_value, status", hex(int_value), hex(status))
             invalid = status & 0x80
-            print("invalid", invalid)
+            # print("invalid", invalid)
             if invalid:
                 invalid_readings += 1
             else:
