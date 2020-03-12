@@ -17,7 +17,7 @@ class VoltmeterChannel:
     VREF = 1.25
 
     def __init__(self, number):
-        self._number = number
+        self.number = number
         # Variables needed for voltage conversion.
         # Defaults are "useful".
         self._gain = 1.0
@@ -28,7 +28,7 @@ class VoltmeterChannel:
         """ Setup channel.
         Values are hard coded so only channel 1 and 2 are supported.
         """
-        if self._number == 1:
+        if self.number == 1:
             config_reg = AD7124RegNames.CFG1_REG
             filter_reg = AD7124RegNames.FILT1_REG
             channel_reg = AD7124RegNames.CH1_MAP_REG
@@ -37,7 +37,7 @@ class VoltmeterChannel:
             negative_pin = 3
             self._bipolar = True
             self._scale = 7.5 / self.VREF
-        elif self._number == 2:
+        elif self.number == 2:
             config_reg = AD7124RegNames.CFG2_REG
             filter_reg = AD7124RegNames.FILT2_REG
             channel_reg = AD7124RegNames.CH2_MAP_REG
@@ -83,7 +83,7 @@ class Voltmeter:
         self._filename = ""
         self._stdout = False
         # List of VoltmeterChannel instances.
-        self._channels = []
+        self._vm_channels = []
         self._position = 1
         self._adc = None
         # Performance stats
@@ -123,7 +123,7 @@ class Voltmeter:
                 requested_channel_num = int(requested_channel)
                 if 0 <= requested_channel_num <= 15:
                     vm_channel = VoltmeterChannel(requested_channel_num)
-                    self._channels.append(vm_channel)
+                    self._vm_channels.append(vm_channel)
                 else:
                     parser.error("channel number out of range. 0 to 15 only.")
         if options.position in (1, 2):
@@ -144,7 +144,7 @@ class Voltmeter:
         # Initialise the driver.  Asserts if anything fails.
         self._adc = AD7124Driver(self._position)
         # Set up the driver to read values on the selected channels.
-        for vm_channel in self._channels:
+        for vm_channel in self._vm_channels:
             vm_channel.setup(self._adc)
         # ADC control register
         # power_mode 2 is full power so goes fastest.
@@ -160,14 +160,18 @@ class Voltmeter:
         print("Readings per second: ", self._readings / time_taken)
 
     def _write_header(self):
-        print("Starting using channels:", self._channels)
+        active_channel_string = ""
+        for vm_channel in self._vm_channels:
+            active_channel_string += str(vm_channel.number)
+            active_channel_string += ","
+        print("Starting using channels:", active_channel_string)
         if self._csv:
             # TODO Open file
             print("Open CSV file")
 
     def _write_value(self, channel_number, int_value):
         if self._stdout:
-            voltage = self._channels[channel_number].to_voltage(int_value)
+            voltage = self._vm_channels[channel_number].to_voltage(int_value)
             print("{}, {:2.6}".format(channel_number, voltage))
         if self._csv:
             # TODO Write to file!
@@ -197,7 +201,6 @@ class Voltmeter:
         except KeyboardInterrupt:
             print("\nStopping...")
         finally:
-            self._adc.term()
             self._write_stats()
             self._write_footer()
 

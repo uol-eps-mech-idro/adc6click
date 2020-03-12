@@ -48,7 +48,6 @@ class AD7124SPI:
 
     def __del__(self):
         """ Tidy up before being destroyed. """
-        self._pi.spi_close(self._spi_handle)
         self._pi.stop()
 
     def read_register(self, to_send):
