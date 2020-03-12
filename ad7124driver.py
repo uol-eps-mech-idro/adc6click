@@ -74,9 +74,7 @@ class AD7124Driver:
         time.sleep(0.001)
         # Disable Channel 0 (enabled by default after reset).
         # 0x0001 is default for the other channel registers.
-        value = 0x0001
-        register_enum = AD7124RegNames(AD7124RegNames.CH0_MAP_REG.value)
-        self.write_register(register_enum, value)
+        self.write_register(AD7124RegNames.CH0_MAP_REG, 0x0001)
 
     def read_id(self):
         """ The value of the ID register is returned.
@@ -163,19 +161,20 @@ class AD7124Driver:
         """ Waits for the data register to contain new data and then reads it.
         :returns: Tuple containing channel_number and the raw value.
         """
-        ready = False
+        channel_number = -1
+        int_value = 0
         start_time = time.time()
         while True:
             (ready, error, _, channel_number) = self.read_status()
             if ready and error == 0:
+                int_value = self.read_register(AD7124RegNames.DATA_REG)
+                # print("rdw: int_value:", hex(int_value))
                 break
             else:
                 if time.time() > (start_time + 1):
                     # Break out of loop if stuck.
-                    channel_number = -1
-                    int_value = 0
+                    # print("rdw: loop exit")
                     break
-        int_value = self.read_register(AD7124RegNames.DATA_REG)
         return (channel_number, int_value)
 
     def set_channel(self, register_enum, enable, setup, ainp, ainm):
@@ -358,10 +357,10 @@ class AD7124Driver:
         """ Convert ADC value to temperature in degrees Celcius.
         """
         # This is the formula in the data sheet but it doesn't work!
+        temperature_c = (float(int_value - 0x800000) / 13584) - 272.5
         # Gives the result of -246.1C when room temperature is 23.0C.
         # Also goes negative when finger applied to device (should warm up).
-        # temperature_c = (float(int_value - 0x800000) / 13584) - 272.5
-        temperature_c = float(int_value - 0x800000) / 13584
+        # temperature_c = float(int_value - 0x800000) / 13584
         return temperature_c
 
     # def set_error_register(self, value):
