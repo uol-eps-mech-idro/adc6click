@@ -38,7 +38,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
         register = AD7124RegNames.CFG0_REG
         self._driver.set_setup_config(
             register,
-            enable=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
+            bipolar=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
             ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
@@ -104,18 +104,19 @@ class TestAD7214Voltmeter(unittest.TestCase):
         print("Initialised.")
         # Start
         for i in range(0, 10):
-            time.sleep(0.02)
+            time.sleep(0.1)
             # Read data register with status.  Prevents duplicate readings as
             # status = 0x90 when reading the same data for the second time.
             (int_value, status) = self._driver.read_register_with_status(
                 AD7124RegNames.DATA_REG)
-            if status == 0x10:
+            invalid = status & 0x80
+            if invalid:
+                invalid_readings += 1
+            else:
                 voltage = self._driver.to_voltage(int_value, gain, vref,
                                                   bipolar, scale)
                 print("Voltage: {:2.8}".format(voltage))
                 valid_readings += 1
-            else:
-                invalid_readings += 1
         # Just to say test passed!
         self.assertEqual(1, 1)
         time_taken = time.time() - start_time
