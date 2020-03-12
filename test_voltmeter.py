@@ -12,6 +12,8 @@ from ad7124registers import AD7124RegNames
 
 class TestAD7214Voltmeter(unittest.TestCase):
 
+    BIPOLAR = True
+
     def setUp(self):
         """ Verify init works.
         Can throw an exception if the ADC is not connected.
@@ -39,12 +41,15 @@ class TestAD7214Voltmeter(unittest.TestCase):
         register = AD7124RegNames.CFG0_REG
         self._driver.set_setup_config(
             register,
-            bipolar=True,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
+            bipolar=self.BIPOLAR,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
             ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
         value = self._driver.read_register(register)
-        self.assertEqual(0x0860, value)
+        if self.BIPOLAR:
+            self.assertEqual(0x0860, value)
+        else:
+            self.assertEqual(0x0060, value)
         # Configuration Filter Register
         register = AD7124RegNames.FILT0_REG
         self._driver.set_setup_filter(
@@ -65,7 +70,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             ainm=1  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
         )
         value = self._driver.read_register(register)
-        self.assertEqual(0x8001, value)
+        self.assertEqual(0x8041, value)
         # Verify that all channels are disabled.
         # This test was added because more than one channel was active.
         # Never found the cause but it has gone away.
@@ -106,8 +111,8 @@ class TestAD7214Voltmeter(unittest.TestCase):
         self._init_adc()
         self._check_errors()
         gain = 1
-        vref = 2.64
-        bipolar = True
+        vref = 1.25
+        bipolar = self.BIPOLAR
         scale = 1.0
         start_time = time.time()
         valid_readings = 0
@@ -119,7 +124,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             # Read data register with status.  Prevents duplicate readings as
             # status = 0x90 when reading the same data for the second time.
             (int_value, status) = self._driver.read_register_with_status(
-                AD7124RegNames.DATA_REG)
+                                AD7124RegNames.DATA_REG)
             # print("int_value, status", hex(int_value), hex(status))
             invalid = status & 0x80
             # print("invalid", invalid)

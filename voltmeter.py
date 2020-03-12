@@ -14,7 +14,7 @@ class VoltmeterChannel:
     Not to be confused with the AD7124 channels!
     """
     # VREF is fixed by the hardware so do not change this!
-    #VREF = 1.25
+    # VREF = 1.25
     VREF = 2.5
 
     def __init__(self, number):
