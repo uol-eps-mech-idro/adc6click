@@ -58,11 +58,13 @@ class TestAD7214Voltmeter(unittest.TestCase):
         self._driver.set_setup_filter(
             register,
             filter_type=0,  # SINC4
-            post_filter=0,  # No post filter.
+            # post_filter=0,  # No post filter.
+            post_filter=3,  # Default
             output_data_rate=0x180  # Fastest is 0x001.
         )
         value = self._driver.read_register(register)
-        self.assertEqual(0x000180, value)
+        # self.assertEqual(0x000180, value)
+        self.assertEqual(0x060180, value)
         # Channel Register
         register = AD7124RegNames.CH0_MAP_REG
         self._driver.set_channel(
