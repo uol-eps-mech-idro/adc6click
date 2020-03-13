@@ -99,6 +99,12 @@ class TestAD7214Voltmeter(unittest.TestCase):
         new_value |= 0x0080
         value = self._driver.read_register(register)
         self.assertEqual(new_value, value)
+        # Read all registers.
+        for register_enum in AD7124RegNames:
+            value = self._driver.read_register(register_enum)
+            print("Register: ", register_enum.name, hex(value))
+        print("Done")
+
 
     def _check_errors(self):
         """ Checks for any errors that could prevent the tests running.
