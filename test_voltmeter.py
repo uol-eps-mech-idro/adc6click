@@ -12,6 +12,8 @@ from ad7124registers import AD7124RegNames
 
 class TestAD7214Voltmeter(unittest.TestCase):
 
+    # Hardware settings
+    INTERNAL_REFERENCE = True
     BIPOLAR = True
 
     def setUp(self):
@@ -37,6 +39,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
                 _ADC6_CONTROL_FULL_POWER_MODE );
         """
         self._driver.reset()
+        print("Using channel 0, setup 0")
         # Config 0
         register = AD7124RegNames.CFG0_REG
         self._driver.set_setup_config(
@@ -70,7 +73,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             ainm=1  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
         )
         value = self._driver.read_register(register)
-        self.assertEqual(0x8041, value)
+        self.assertEqual(0x8001, value)
         # Verify that all channels are disabled.
         # This test was added because more than one channel was active.
         # Never found the cause but it has gone away.
@@ -85,7 +88,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
         self._driver.set_adc_control(
             data_status=True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
             not_cs_en=True,  # 9 _ADC6_CONTROL_DOUT_PIN_ENABLE
-            ref_en=True,  # 8 _ADC6_CONTROL_INTERNAL_REFERENCE_VOLTAGE_ENABLE
+            ref_en=self.INTERNAL_REFERENCE,
             power_mode=2  # 7,6 _ADC6_CONTROL_FULL_POWER_MODE
         )
         register = AD7124RegNames.ADC_CTRL_REG

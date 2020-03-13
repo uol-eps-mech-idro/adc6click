@@ -153,8 +153,8 @@ class AD7124Driver:
         # Status byte is the last byte.
         value = self._data_to_int(result[:-1])
         status = result[-1]
-        # print("read_register_with_status: value:", hex(value),
-        #       "status: ", hex(status))
+        print("read_register_with_status: value:", hex(value),
+              "status: ", hex(status))
         return (value, status)
 
     def read_data_wait(self):
@@ -214,7 +214,7 @@ class AD7124Driver:
         Defaults set default value in datasheet, 0x0860
         :param register_enum: The register to set, e.g.
             AD7124RegNames.CFG0_REG.
-        :param bipolar: True for bipolar, False for unipolar.
+        :param bipolar: True for bipolar (default), False for unipolar.
         :param burnout: Range 0 to 3. 0 is off.
         :param ref_buf_p: True enabled.
         :param ref_buf_m: True enabled.
