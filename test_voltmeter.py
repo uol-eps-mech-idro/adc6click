@@ -13,15 +13,18 @@ from ad7124registers import AD7124RegNames
 class TestAD7214Voltmeter(unittest.TestCase):
 
     # Hardware settings
+    POSITION = 1
     INTERNAL_REFERENCE = True
     BIPOLAR = True
+    # CHANNEL 0 uses AIN0,1, 1 uses AIN2,3, 2 uses AIN4,5.
+    CHANNEL = 1
+    # Always uses ADC setup 0.
 
     def setUp(self):
         """ Verify init works.
         Can throw an exception if the ADC is not connected.
         """
-        position = 1
-        self._driver = AD7124Driver(position)
+        self._driver = AD7124Driver(self.POSITION)
 
     def _init_adc(self):
         """ Setup ADC.  These values are taken from the Mikro example code.
@@ -66,16 +69,27 @@ class TestAD7214Voltmeter(unittest.TestCase):
         # self.assertEqual(0x000180, value)
         self.assertEqual(0x060180, value)
         # Channel Register
+        ainp = 0  # 9:5 0b00000 _ADC6_CHANNEL_POSITIVE_ANALOG_INPUT_AIN0
+        ainm = 1  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
+        expected = 0x8001
+        if self.CHANNEL == 1:
+            ainp = 2
+            ainm = 3
+            expected = 0x8043
+        elif self.CHANNEL == 2:
+            ainp = 4
+            ainm = 5
+            expected = 0x8085
         register = AD7124RegNames.CH0_MAP_REG
         self._driver.set_channel(
             register,
             enable=True,  # 15 _ADC6_CONTROL_DATA_STATUS_ENABLE
             setup=0,  # Setup 0.
-            ainp=0,  # 9:5 0b00000 _ADC6_CHANNEL_POSITIVE_ANALOG_INPUT_AIN0
-            ainm=1  # 4:0 0b00001 _ADC6_CHANNEL_NEGATIVE_ANALOG_INPUT_AIN1
+            ainp=ainp,
+            ainm=ainm
         )
         value = self._driver.read_register(register)
-        self.assertEqual(0x8001, value)
+        self.assertEqual(expected, value)
         # Verify that all channels are disabled.
         # This test was added because more than one channel was active.
         # Never found the cause but it has gone away.
@@ -106,7 +120,6 @@ class TestAD7214Voltmeter(unittest.TestCase):
             value = self._driver.read_register(register_enum)
             print("Register: ", register_enum.name, hex(value))
         print("Done")
-
 
     def _check_errors(self):
         """ Checks for any errors that could prevent the tests running.
