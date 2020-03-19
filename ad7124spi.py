@@ -16,6 +16,7 @@ def bytes_to_string(data):
 class AD7124SPI:
     """ A wrapper that hides the SPI calls from the driver.
     """
+
     # Values for SPI communications.  All other values are default.
     # Max SPI baud rate is 5MHz.
     AD7124_SPI_BAUD_RATE = 5 * 1000 * 1000
@@ -40,11 +41,12 @@ class AD7124SPI:
         if position == 1 or position == 2:
             spi_channel = position - 1
         else:
-            raise ValueError('ERROR: position must be 1 or 2')
+            raise ValueError("ERROR: position must be 1 or 2")
         # print("init: channel", spi_channel)
         # Open SPI device
         self._spi_handle = self._pi.spi_open(
-            spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags)
+            spi_channel, self.AD7124_SPI_BAUD_RATE, spi_flags
+        )
 
     def __del__(self):
         """ Tidy up before being destroyed. """

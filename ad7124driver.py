@@ -23,7 +23,7 @@ class AD7124Driver:
         ad7124_id = self.read_id()
         # print("init id", hex(ad7124_id))
         if ad7124_id not in (0x14, 0x16):
-            raise OSError('ERROR: device on SPI bus is NOT an AD7124!')
+            raise OSError("ERROR: device on SPI bus is NOT an AD7124!")
 
     def _build_command(self, register_enum, read=False):
         """ Builds a command byte.
@@ -33,8 +33,8 @@ class AD7124Driver:
         """
         command = 0
         if read:
-            command += (1 << 6)
-        command += (register_enum.value & 0x3f)
+            command += 1 << 6
+        command += register_enum.value & 0x3F
         # print("_build_command", hex(command))
         return command
 
@@ -50,7 +50,7 @@ class AD7124Driver:
         if status_byte:
             num_bytes += 1
         value = 0
-        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        value_bytes = value.to_bytes(num_bytes, byteorder="big")
         to_send += value_bytes
         (count, result) = self._spi.read_register(to_send)
         # print("_read_register: count", count, "data", result)
@@ -67,7 +67,7 @@ class AD7124Driver:
 
     def reset(self):
         """ Resets the AD7124 to power up conditions. """
-        to_send = b'\xff\xff\xff\xff\xff\xff\xff\xff'
+        to_send = b"\xff\xff\xff\xff\xff\xff\xff\xff"
         # print("reset command", to_send)
         self._spi.write_register(to_send)
         # TODO WAIT UNTIL PROPERLY READY
@@ -97,7 +97,7 @@ class AD7124Driver:
         to_send.append(command)
         # Convert value to bytes.
         num_bytes = self._registers.size(register_enum)
-        value_bytes = value.to_bytes(num_bytes, byteorder='big')
+        value_bytes = value.to_bytes(num_bytes, byteorder="big")
         to_send += value_bytes
         # Print to_send as hex values for easier debugging.
         # print("write_register: to_send", bytes_to_string(to_send))
@@ -137,7 +137,7 @@ class AD7124Driver:
         if value & 0x10:
             power_on_reset = True
             # print("read_status: power_on_reset", power_on_reset)
-        active_channel &= 0x0f
+        active_channel &= 0x0F
         return (ready, error, power_on_reset, active_channel)
 
     def read_register_with_status(self, register_enum):
@@ -153,8 +153,12 @@ class AD7124Driver:
         # Status byte is the last byte.
         value = self._data_to_int(result[:-1])
         status = result[-1]
-        print("read_register_with_status: value:", hex(value),
-              "status: ", hex(status))
+        print(
+            "read_register_with_status: value:",
+            hex(value),
+            "status: ",
+            hex(status),
+        )
         return (value, status)
 
     def read_data_wait(self):
@@ -194,22 +198,30 @@ class AD7124Driver:
             value |= 0x8000
         # print("set_channel_register value:", hex(value))
         # bits 14:12
-        value |= ((setup & 0x07) << 12)
+        value |= (setup & 0x07) << 12
         # print("set_channel_register value:", hex(value))
         # bits 9:5
-        value |= ((ainp & 0x1f) << 5)
+        value |= (ainp & 0x1F) << 5
         # print("set_channel_register ainp:", hex(ainp))
         # print("set_channel_register value:", hex(value))
         # bits 4:0
-        value |= (ainm & 0x1f)
+        value |= ainm & 0x1F
         # print("set_channel_register value:", hex(value))
         # Write to the register
         self.write_register(register_enum, value)
 
-    def set_setup_config(self, register_enum, bipolar=True, burnout=0,
-                         ref_buf_p=False, ref_buf_m=False,
-                         ain_buf_p=True, ain_buf_m=True,
-                         ref_sel=0, pga=0):
+    def set_setup_config(
+        self,
+        register_enum,
+        bipolar=True,
+        burnout=0,
+        ref_buf_p=False,
+        ref_buf_m=False,
+        ain_buf_p=True,
+        ain_buf_m=True,
+        ref_sel=0,
+        pga=0,
+    ):
         """ Sets the config register for the setup.
         Defaults set default value in datasheet, 0x0860
         :param register_enum: The register to set, e.g.
@@ -228,7 +240,7 @@ class AD7124Driver:
         value = 0
         if bipolar:
             value |= 0x0800
-        value |= ((burnout & 0x03) << 9)
+        value |= (burnout & 0x03) << 9
         if ref_buf_p:
             value |= 0x0100
         if ref_buf_m:
@@ -237,14 +249,20 @@ class AD7124Driver:
             value |= 0x0040
         if ain_buf_m:
             value |= 0x0020
-        value |= ((ref_sel & 0x03) << 3)
-        value |= (pga & 0x07)
+        value |= (ref_sel & 0x03) << 3
+        value |= pga & 0x07
         # print("set_config_register value:", hex(value))
         self.write_register(register_enum, value)
 
-    def set_setup_filter(self, register_enum, filter_type=0, rej60=False,
-                         post_filter=6, single_cycle=False,
-                         output_data_rate=0x180):
+    def set_setup_filter(
+        self,
+        register_enum,
+        filter_type=0,
+        rej60=False,
+        post_filter=6,
+        single_cycle=False,
+        output_data_rate=0x180,
+    ):
         """ Sets the filter register for the setup.
         Defaults set default value in datasheet, 0x060180
         :param register_enum: The register to set, e.g.
@@ -259,13 +277,13 @@ class AD7124Driver:
         # The filter registers are 24 bits, MSB first.
         # bits 15:11 must be 0.
         value = 0
-        value |= ((filter_type & 0x07) << 21)
+        value |= (filter_type & 0x07) << 21
         if rej60:
             value |= 0x100000
-        value |= ((post_filter & 0x07) << 17)
+        value |= (post_filter & 0x07) << 17
         if single_cycle:
             value |= 0x010000
-        value |= (output_data_rate & 0x7ff)
+        value |= output_data_rate & 0x7FF
         # print("set_filter_register value:", hex(value))
         self.write_register(register_enum, value)
 
@@ -280,7 +298,7 @@ class AD7124Driver:
         """
         # The offset registers are 24 bits, MSB first.
         value = 0
-        value |= (new_offset & 0xffffff)
+        value |= new_offset & 0xFFFFFF
         # print("set_setup_offset value:", hex(value))
         self.write_register(register_enum, value)
 
@@ -295,13 +313,21 @@ class AD7124Driver:
         """
         # The gain registers are 24 bits, MSB first.
         value = 0
-        value |= (new_gain & 0xffffff)
+        value |= new_gain & 0xFFFFFF
         # print("set_gain_register value:", hex(value))
         self.write_register(register_enum, value)
 
-    def set_adc_control(self, dout_rdy_del=False, cont_read=False,
-                        data_status=False, not_cs_en=False, ref_en=False,
-                        power_mode=0, mode=0, clock_select=0):
+    def set_adc_control(
+        self,
+        dout_rdy_del=False,
+        cont_read=False,
+        data_status=False,
+        not_cs_en=False,
+        ref_en=False,
+        power_mode=0,
+        mode=0,
+        clock_select=0,
+    ):
         """ Writes to the ADC control register.
         Default value of the register is 0x0000 so defaults of 0 work.
         """
@@ -318,9 +344,9 @@ class AD7124Driver:
             value |= 0x0200
         if ref_en:
             value |= 0x0100
-        value |= ((power_mode & 0x03) << 6)
-        value |= ((mode & 0x0f) << 2)
-        value |= (clock_select & 0x03)
+        value |= (power_mode & 0x03) << 6
+        value |= (mode & 0x0F) << 2
+        value |= clock_select & 0x03
         # print("set_control_register value:", hex(value))
         self.write_register(AD7124RegNames.ADC_CTRL_REG, value)
 
@@ -345,7 +371,7 @@ class AD7124Driver:
         """
         voltage = 0.0
         float_value = float(int_value) * float(vref)
-        if (bipolar):
+        if bipolar:
             voltage = float_value / float(0x800000)
             voltage -= float(vref)
         else:

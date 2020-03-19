@@ -49,7 +49,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             register,
             bipolar=self.BIPOLAR,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
-            ain_buf_m=True  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
+            ain_buf_m=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
         value = self._driver.read_register(register)
         if self.BIPOLAR:
@@ -63,7 +63,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             filter_type=0,  # SINC4
             # post_filter=0,  # No post filter.
             post_filter=3,  # Default
-            output_data_rate=0x180  # Fastest is 0x001.
+            output_data_rate=0x180,  # Fastest is 0x001.
         )
         value = self._driver.read_register(register)
         # self.assertEqual(0x000180, value)
@@ -86,7 +86,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             enable=True,  # 15 _ADC6_CONTROL_DATA_STATUS_ENABLE
             setup=0,  # Setup 0.
             ainp=ainp,
-            ainm=ainm
+            ainm=ainm,
         )
         value = self._driver.read_register(register)
         self.assertEqual(expected, value)
@@ -95,7 +95,8 @@ class TestAD7214Voltmeter(unittest.TestCase):
         # Never found the cause but it has gone away.
         for channel in range(1, 16):
             register_enum = AD7124RegNames(
-                            AD7124RegNames.CH0_MAP_REG.value + channel)
+                AD7124RegNames.CH0_MAP_REG.value + channel
+            )
             assert_msg = "channel: " + str(channel)
             value = self._driver.read_register(register_enum)
             # print("tv.ia: channel, value", channel, hex(value))
@@ -105,7 +106,7 @@ class TestAD7214Voltmeter(unittest.TestCase):
             data_status=True,  # 10 _ADC6_CONTROL_DATA_STATUS_ENABLE
             not_cs_en=True,  # 9 _ADC6_CONTROL_DOUT_PIN_ENABLE
             ref_en=self.INTERNAL_REFERENCE,
-            power_mode=2  # 7,6 _ADC6_CONTROL_FULL_POWER_MODE
+            power_mode=2,  # 7,6 _ADC6_CONTROL_FULL_POWER_MODE
         )
         register = AD7124RegNames.ADC_CTRL_REG
         new_value = 0
@@ -148,15 +149,17 @@ class TestAD7214Voltmeter(unittest.TestCase):
             # Read data register with status.  Prevents duplicate readings as
             # status = 0x90 when reading the same data for the second time.
             (int_value, status) = self._driver.read_register_with_status(
-                                AD7124RegNames.DATA_REG)
+                AD7124RegNames.DATA_REG
+            )
             # print("int_value, status", hex(int_value), hex(status))
             invalid = status & 0x80
             # print("invalid", invalid)
             if invalid:
                 invalid_readings += 1
             else:
-                voltage = self._driver.to_voltage(int_value, gain, vref,
-                                                  bipolar, scale)
+                voltage = self._driver.to_voltage(
+                    int_value, gain, vref, bipolar, scale
+                )
                 print("Voltage: {:2.8}".format(voltage))
                 valid_readings += 1
         # Just to say test passed!
@@ -168,5 +171,5 @@ class TestAD7214Voltmeter(unittest.TestCase):
         print("Readings per second: ", valid_readings / time_taken)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

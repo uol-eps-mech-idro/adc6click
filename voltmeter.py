@@ -3,7 +3,9 @@
 This file uses the AD7124Driver class to set up and control the AD7124 device.
 """
 
+import csv
 import time
+import sys
 from optparse import OptionParser
 from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
@@ -13,6 +15,7 @@ class VoltmeterChannel:
     """ Stores the values for a voltmeter channel.
     Not to be confused with the AD7124 channels!
     """
+
     # VREF is fixed by the hardware so do not change this!
     # VREF = 1.25
     VREF = 2.5
@@ -51,23 +54,35 @@ class VoltmeterChannel:
             print("ERROR: ONLY CHANNEL 1 AND SUPPORTED")
             exit(-1)
         # Set the registers up
-        adc.set_setup_config(config_reg, bipolar=self._bipolar,
-                             ref_buf_p=True, ref_buf_m=True,
-                             ain_buf_p=True, ain_buf_m=True,
-                             ref_sel=0, pga=0)
+        adc.set_setup_config(
+            config_reg,
+            bipolar=self._bipolar,
+            ref_buf_p=True,
+            ref_buf_m=True,
+            ain_buf_p=True,
+            ain_buf_m=True,
+            ref_sel=0,
+            pga=0,
+        )
         # Filters are set up for speed so are less accurate.
         adc.set_setup_filter(
             filter_reg,
             filter_type=0,  # SINC4
             post_filter=0,  # No post filter.
-            output_data_rate=0x200  # Fastest is 0x001.
+            output_data_rate=0x200,  # Fastest is 0x001.
         )
-        adc.set_channel(channel_reg, enable=True, setup=setup,
-                        ainp=positive_pin, ainm=negative_pin)
+        adc.set_channel(
+            channel_reg,
+            enable=True,
+            setup=setup,
+            ainp=positive_pin,
+            ainm=negative_pin,
+        )
 
     def to_voltage(self, adc, int_value):
-        voltage = adc.to_voltage(int_value, self._gain, self.VREF,
-                                 self._bipolar, self._scale)
+        voltage = adc.to_voltage(
+            int_value, self._gain, self.VREF, self._bipolar, self._scale
+        )
         return voltage
 
 
@@ -83,6 +98,8 @@ class Voltmeter:
         self._stdout = True
         self._csv = False
         self._filename = ""
+        self._csv_file = None
+        self._csv_writer = None
         # List of VoltmeterChannel instances.
         self._vm_channels = []
         self._position = 1
@@ -100,18 +117,31 @@ class Voltmeter:
         usage += "To stop the program, press Ctrl+c."
         version = "%prog version " + self.VERSION
         parser = OptionParser(usage, version=version)
-        parser.set_defaults(filename="ad7124.csv", output="console",
-                            position=1)
-        parser.add_option("-o", "--file", dest="filename",
-                          help="Write to FILE.", metavar="FILE")
-        parser.add_option("-f", "--format", dest="format",
-                          help="format: csv, console. Default is '%default'.")
-        parser.add_option(
-            "-p", "--position", dest="1",
-            help="Position of the ADC6Click: 1 or 2.  Default is '%default'."
+        parser.set_defaults(
+            filename="ad7124.csv", output="console", position=1
         )
-        parser.add_option("-v", "--verbose",
-                          action="store_true", dest="verbose")
+        parser.add_option(
+            "-o",
+            "--file",
+            dest="filename",
+            help="Write to FILE.",
+            metavar="FILE",
+        )
+        parser.add_option(
+            "-f",
+            "--format",
+            dest="format",
+            help="format: csv, console. Default is '%default'.",
+        )
+        parser.add_option(
+            "-p",
+            "--position",
+            dest="1",
+            help="Position of the ADC6Click: 1 or 2.  Default is '%default'.",
+        )
+        parser.add_option(
+            "-v", "--verbose", action="store_true", dest="verbose"
+        )
         (options, requested_channels) = parser.parse_args()
         # print("print options", options, "channels", requested_channels)
         num_requested_channels = len(requested_channels)
@@ -161,18 +191,32 @@ class Voltmeter:
             active_channel_string += ","
         print("Starting using channels:", active_channel_string)
         if self._csv:
-            # TODO Open file
-            print("Open CSV file")
+            try:
+                self._csv_file = open(self._filename, "w")
+            except OSError as err:
+                print("OS error: {0}".format(err))
+                sys.exit(1)
+            else:
+                self._csv_writer = csv.writer(
+                    self._csv_file,
+                    delimiter=",",
+                    quotechar='"',
+                    quoting=csv.QUOTE_MINIMAL,
+                )
+                header = ["Channel", "Voltage"]
+                self._csv_writer.writerow(header)
+                print("Opened CSV file:", self._filename)
 
     def _write_value(self, channel_number, int_value):
         self._readings += 1
         if self._stdout:
-            voltage = self._vm_channels[channel_number].to_voltage(self._adc,
-                                                                   int_value)
+            voltage = self._vm_channels[channel_number].to_voltage(
+                self._adc, int_value
+            )
             print("{}, {:2.6}".format(channel_number, voltage))
         if self._csv:
-            # TODO Write to file!
-            print("{}, {:2.6}".format(channel_number, voltage))
+            row = [channel_number, voltage]
+            self._csv_writer.writerow(row)
 
     def _write_footer(self):
         print("Finished.")
@@ -181,7 +225,7 @@ class Voltmeter:
         print("Readings: ", self._readings)
         print("Readings per second: ", self._readings / time_taken)
         if self._csv:
-            # TODO Close file
+            self._csv_file.close()
             print("CSV file closed")
 
     def run(self):
@@ -211,5 +255,5 @@ def run():
     voltmeter.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

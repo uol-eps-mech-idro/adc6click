@@ -8,10 +8,10 @@ import unittest
 from ad7124driver import AD7124Driver
 from ad7124registers import AD7124RegNames
 
-DEGREES_CELCIUS=u"\u2103"
+DEGREES_CELCIUS = u"\u2103"
+
 
 class TestAD7214InternalTemperature(unittest.TestCase):
-
     def setUp(self):
         """ Verify init works.
         Can throw an exception if the ADC is not connected.
@@ -37,9 +37,11 @@ class TestAD7214InternalTemperature(unittest.TestCase):
         self._adc.set_channel(
             register,
             # Enable using setup 7.
-            enable=True, setup=7,
+            enable=True,
+            setup=7,
             # Internal temperature sensor
-            ainp=0b10000, ainm=0b10000
+            ainp=0b10000,
+            ainm=0b10000,
         )
         value = self._adc.read_register(register)
         expected = 0
@@ -53,7 +55,7 @@ class TestAD7214InternalTemperature(unittest.TestCase):
             data_status=False,  # No status message.
             not_cs_en=True,  # DOUT pin.
             ref_en=True,  # Enable internal reference.
-            power_mode=2  # Full power mode.
+            power_mode=2,  # Full power mode.
         )
         register = AD7124RegNames.ADC_CTRL_REG
         new_value = 0
@@ -94,5 +96,5 @@ class TestAD7214InternalTemperature(unittest.TestCase):
         print("Readings per second: ", valid_readings / time_taken)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
