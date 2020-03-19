@@ -87,9 +87,10 @@ class AD7124Driver:
 
     def write_register(self, register_enum, value):
         """ Write the given value to the given register.
-        :param register_enum: The register to write to,
-            e.g. AD7124RegNames.ERREN_REG.
-        :param value: The value as an integer.
+        Args:
+            register_enum: The register to write to,
+                e.g. AD7124RegNames.ERREN_REG.
+            value: The value as an integer.
         """
         # Command value
         to_send = []
@@ -106,9 +107,11 @@ class AD7124Driver:
 
     def read_register(self, register_enum):
         """ Returns the value read from the register as an int value.
-        :param register_enum: The register to read,
-            e.g. AD7124RegNames.DATA.
-        :returns: integer value of the register contents.
+        Args:
+            register_enum: The register to read,
+                e.g. AD7124RegNames.DATA.
+        Returns:
+            An integer value of the register contents.
         """
         result = self._read_register(register_enum, False)
         value = self._data_to_int(result)
@@ -116,8 +119,10 @@ class AD7124Driver:
         return value
 
     def read_status(self):
-        """ Returns a tuple containing the values:
-        (ready{bool}, error{bool}, power on reset{bool}, active channel)
+        """ Returns the value of the status register as a tuple.
+        Returns:
+            A tuple containing the values:
+            (ready{bool}, error{bool}, power on reset{bool}, active channel)
         NOTE: ready = True when ready.  The ADC sets bit 7 to low when ready
         so this code inverts the sense to make it behave as the other flags do.
         """
@@ -142,12 +147,15 @@ class AD7124Driver:
 
     def read_register_with_status(self, register_enum):
         """ Read the given register returning value and status.
+
         NOTE: This function should only be used when the DATA_STATUS
         bit of the ADC_CONTROL register is set.
-        :param register_enum: The register to read,
-            e.g. AD7124RegNames.DATA.
-        :returns: A tuple of the value read from the register as an
-        int value and the value of the status register.
+        Args:
+            register_enum: The register to read,
+                e.g. AD7124RegNames.DATA.
+        Returns:
+            A tuple of the value read from the register as an
+            int value and the value of the status register.
         """
         result = self._read_register(register_enum, True)
         # Status byte is the last byte.
@@ -163,7 +171,8 @@ class AD7124Driver:
 
     def read_data_wait(self):
         """ Waits for the data register to contain new data and then reads it.
-        :returns: Tuple containing channel_number and the raw value.
+        Returns:
+            Tuple containing channel_number and the raw value.
         """
         channel_number = -1
         int_value = 0
@@ -184,12 +193,13 @@ class AD7124Driver:
 
     def set_channel(self, register_enum, enable, setup, ainp, ainm):
         """ Sets the given channel register using the given values.
-        :param register_enum: The register to set,
-            e.g. AD7124RegNames.CH0_MAP_REG.
-        :param enable: True to enable the channel.
-        :param setup: Number of the setup to use.
-        :param ainp: Positive input to use.
-        :param ainm: Negative input to use.
+        Args:
+            register_enum: The register to set,
+                e.g. AD7124RegNames.CH0_MAP_REG.
+            enable: True to enable the channel.
+            setup: Number of the setup to use.
+            ainp: Positive input to use.
+            ainm: Negative input to use.
         """
         # The channel registers are 16 bits, MSB first.
         value = 0
@@ -223,17 +233,7 @@ class AD7124Driver:
         pga=0,
     ):
         """ Sets the config register for the setup.
-        Defaults set default value in datasheet, 0x0860
-        :param register_enum: The register to set, e.g.
-            AD7124RegNames.CFG0_REG.
-        :param bipolar: True for bipolar (default), False for unipolar.
-        :param burnout: Range 0 to 3. 0 is off.
-        :param ref_buf_p: True enabled.
-        :param ref_buf_m: True enabled.
-        :param ain_buf_p: True enabled.
-        :param ain_buf_m: True enabled.
-        :param ref_sel: The reference voltage to use. 0 (default) is REFIN1.
-        :param pga: Gain select bits. 0 = gain of 1 (default).
+        See datasheet for description of what the parameters do.
         """
         # The configuration registers are 24 bits, MSB first.
         # bits 15:12 must be 0.
@@ -264,15 +264,7 @@ class AD7124Driver:
         output_data_rate=0x180,
     ):
         """ Sets the filter register for the setup.
-        Defaults set default value in datasheet, 0x060180
-        :param register_enum: The register to set, e.g.
-            AD7124RegNames.FILT0_REG.
-        :param filter_type: See datasheet for values.
-        :param rej60: True is enabled.
-        :param post_filter: See datasheet for values.
-        :param single_cycle: True is enabled.
-        :param output_data_rate: Range 1 to 2047. 1 is fastest but
-            noisiest.
+        See datasheet for description of what the parameters do.
         """
         # The filter registers are 24 bits, MSB first.
         # bits 15:11 must be 0.
@@ -289,12 +281,7 @@ class AD7124Driver:
 
     def set_setup_offset(self, register_enum, new_offset):
         """ Sets the offset register for the setup.
-        Defaults set default value in datasheet, 0x800000.
-        NOTE: this register is normally set using an internal or
-        full-scale calibration.
-        :param register_enum: The register to set, e.g.
-            AD7124RegNames.OFFS0_REG.
-        :param new_offset: The offset value to use.
+        See datasheet for description of what the parameters do.
         """
         # The offset registers are 24 bits, MSB first.
         value = 0
@@ -304,12 +291,7 @@ class AD7124Driver:
 
     def set_setup_gain(self, register_enum, new_gain):
         """ Sets the gain register for the setup.
-        Default is a factory generated value.
-        NOTE: this register is normally set using an internal or
-        full-scale calibration.
-        :param register_enum: The register to set, e.g.
-            AD7124RegNames.FILT0_REG.
-        :param new_gain: The new gain value to apply.
+        See datasheet for description of what the parameters do.
         """
         # The gain registers are 24 bits, MSB first.
         value = 0
@@ -329,7 +311,7 @@ class AD7124Driver:
         clock_select=0,
     ):
         """ Writes to the ADC control register.
-        Default value of the register is 0x0000 so defaults of 0 work.
+        See datasheet for description of what the values do.
         """
         value = 0
         # The control register is 16 bits, MSB first.
@@ -352,36 +334,40 @@ class AD7124Driver:
 
     def to_voltage(_, int_value, gain, vref, bipolar, scale):
         """ Converts integer value to a voltage.
-        :param int_value: the value to convert.
-        :param gain: The PGA gain value, 1 to 128.
-        :param vref: The reference voltage, normally +1.25V or +2.5V.
-        :param bipolar: True for bipolar, else unipolar.
-        :param scale: A scaling factor used for external potential division.
-        Data sheet says::
+        Args:
+            int_value: the value to convert.
+            gain: The PGA gain value, 1 to 128.
+            vref: The reference voltage, normally +1.25V or +2.5V.
+            bipolar: True for bipolar, else unipolar.
+            scale: A scaling factor used for external potential division.
+        The conversion specified in the datasheet (p.48) is:
+        ```
+        Unipolar:
             code = (2^N x AIN x Gain) / VRef
             Differential voltage: 0 = 0x000000, midscale = 0x80000,
                 fullscale = 0xffffff
-            code = 2^N-1 x [(AIN x Gain) / VRef + 1]
+        Bipolar:
+            code = 2^N-1 x [(AIN x Gain / VRef) + 1]
             Differential voltage: negative fullscale = 0x000000,
                 0V = 0x80000, positive fullscale = 0xffffff
-            where:
+        where:
             N = 24
             AIN is the analogue input voltage.
             Gain is the gain setting (1 to 128).
+        ```
         """
-        voltage = 0.0
-        float_value = float(int_value) * float(vref)
+        voltage = float(int_value)
         if bipolar:
-            voltage = float_value / float(0x800000)
-            voltage -= float(vref)
+            voltage = voltage / float(0x7FFFFF)
         else:
-            voltage = float_value / float(0xFFFFFF)
-        voltage /= float(gain)
+            voltage = voltage / float(0xFFFFFF)
+        voltage *= vref
+        voltage /= gain
         voltage *= scale
         return voltage
 
     def to_temperature(_, int_value):
-        """ Convert ADC value to temperature in degrees Celcius.
+        """ Converts the given ADC value to temperature in degrees Celcius.
         """
         # This is the formula in the data sheet but it doesn't work!
         temperature_c = (float(int_value - 0x800000) / 13584) - 272.5

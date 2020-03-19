@@ -6,7 +6,8 @@ from enum import IntEnum
 
 class AD7124RegNames(IntEnum):
     """ List of all register names.
-    IntEnum is used so that basic maths can be done.
+
+    IntEnum is used so that basic maths can be done on the enums.
     """
 
     COMM_REG = 0x00
@@ -132,15 +133,33 @@ class AD7124Registers:
         ]
 
     # Getters
+    def access(self, register_enum):
+        """ Returns access type for the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            1 is write, 2 is read.
+        """
+        # print("registers.access:", register_enum)
+        return self._registers[register_enum.value][2]
+
     def initial(self, register_enum):
+        """ Returns initial value of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The initial value of the register.
+        """
         # print("registers.initial:", register_enum)
         return self._registers[register_enum.value][0]
 
     def size(self, register_enum):
+        """ Returns the size of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The number of bytes in the register.
+        """
         # print("registers.size:", register_enum)
         return self._registers[register_enum.value][1]
 
-    def access(self, register_enum):
-        """ Returns access type, 1 is write, 2 is read. """
-        # print("registers.access:", register_enum)
-        return self._registers[register_enum.value][2]
