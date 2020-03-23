@@ -4,7 +4,6 @@
 the SPI bus could be controlled using the pigpio library.
 """
 
-import sys
 import time
 import pigpio
 
@@ -26,8 +25,8 @@ def test_ad7124_read():
     data_read = pi.spi_xfer(spi_h, data)
     print("channel", data_read)
     # Set setup. Leave as default
-    #data = b'\x01\x00\x04'
-    #data_read = pi.spi_xfer(spi_h, data)
+    # data = b'\x01\x00\x04'
+    # data_read = pi.spi_xfer(spi_h, data)
     # print("setup", data_read)
     # Set diagnostics to 0x000040
     # ERREN_REG = 0x07
@@ -54,6 +53,7 @@ def test_ad7124_read():
         time.sleep(0.1)
     # Tidy up
     pi.spi_close(spi_h)
+
 
 def print_temperature(adc_value):
     print("print_temperature", adc_value.hex())
