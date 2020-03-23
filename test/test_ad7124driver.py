@@ -104,10 +104,11 @@ class TestAD7214Driver(unittest.TestCase):
             # print("tsc: channel, value", channel, hex(value))
             self.assertEqual(0x0001, value, assert_msg)
         # Enable channel 3 using setup 3 pins 6 and 7.
-        register_enum = AD7124RegNames.CH3_MAP_REG
+        channel = 3
         self.ad7124.set_channel(
-            register_enum, enable=True, setup=3, ainp=6, ainm=7
+            channel, enable=True, setup=3, ainp=6, ainm=7
         )
+        register_enum = AD7124RegNames.CFG0_REG + channel
         value = self.ad7124.read_register(register_enum)
         expected = 0x8000  # Enable
         expected += 0x3000  # Setup
@@ -115,10 +116,11 @@ class TestAD7214Driver(unittest.TestCase):
         expected += 0x0007  # AINM
         self.assertEqual(expected, value)
         # Enable channel 15 using setup 7 for reading internal temperature.
-        register_enum = AD7124RegNames.CH15_MAP_REG
+        channel = 15
         self.ad7124.set_channel(
-            register_enum, enable=True, setup=7, ainp=16, ainm=16
+            channel, enable=True, setup=7, ainp=16, ainm=16
         )
+        register_enum = AD7124RegNames.CH0_MAP_REG + channel
         value = self.ad7124.read_register(register_enum)
         expected = 0x8000
         expected += 0x7000
@@ -130,9 +132,10 @@ class TestAD7214Driver(unittest.TestCase):
         """ Set up two setup config registers and verify results.
         """
         # Setup 2, unipolar, burnout 2uA, all bufs on, ref 1, gain = 8.
-        register_enum = AD7124RegNames.CFG2_REG
+        setup = 2
+        register_enum = AD7124RegNames.CFG0_REG + setup
         self.ad7124.set_setup_config(
-            register_enum,
+            setup,
             bipolar=False,
             burnout=2,
             ref_buf_p=True,
@@ -150,9 +153,10 @@ class TestAD7214Driver(unittest.TestCase):
         expected += 0x0003  # PGA = 8
         self.assertEqual(expected, value)
         # Setup 7, bipolar, no burnout, all bufs off, internal ref, gain = 1.
-        register_enum = AD7124RegNames.CFG7_REG
+        setup = 7
+        register_enum = AD7124RegNames.CFG0_REG + setup
         self.ad7124.set_setup_config(
-            register_enum,
+            setup,
             bipolar=True,
             ref_buf_p=False,
             ref_buf_m=False,
@@ -174,9 +178,10 @@ class TestAD7214Driver(unittest.TestCase):
         """
         # Filter 2, sinc4, rej60, no post_filter, single_cycle,
         # data rate = 0x200
-        register_enum = AD7124RegNames.FILT2_REG
+        setup = 2
+        register_enum = AD7124RegNames.FILT0_REG + setup
         self.ad7124.set_setup_filter(
-            register_enum,
+            setup,
             filter_type=0,
             rej60=True,
             post_filter=0,
@@ -192,9 +197,10 @@ class TestAD7214Driver(unittest.TestCase):
         self.assertEqual(expected, value)
         # Filter 7, post filter enabled, post_filter = 6,
         # data rate = 2047 (slowest)
-        register_enum = AD7124RegNames.FILT7_REG
+        setup = 7
+        register_enum = AD7124RegNames.FILT0_REG + setup
         self.ad7124.set_setup_filter(
-            register_enum,
+            setup,
             filter_type=0b111,
             rej60=False,
             post_filter=0b110,
@@ -216,15 +222,17 @@ class TestAD7214Driver(unittest.TestCase):
         # Use defaults for all but mode.
         self.ad7124.set_adc_control(mode=0b0010)
         # Offset 2, 0x123456
-        register_enum = AD7124RegNames.OFFS2_REG
+        setup = 2
+        register_enum = AD7124RegNames.OFFS0_REG + setup
         new_value = 0x123456
-        self.ad7124.set_setup_offset(register_enum, new_value)
+        self.ad7124.set_setup_offset(setup, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
         # Offset6, 0xbeef00
-        register_enum = AD7124RegNames.OFFS6_REG
+        setup = 6
+        register_enum = AD7124RegNames.OFFS0_REG + setup
         new_value = 0xBEEF00
-        self.ad7124.set_setup_offset(register_enum, new_value)
+        self.ad7124.set_setup_offset(setup, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
 
@@ -235,15 +243,17 @@ class TestAD7214Driver(unittest.TestCase):
         # Use defaults for all but mode.
         self.ad7124.set_adc_control(mode=0b100)
         # Gain 2, 0x123456
-        register_enum = AD7124RegNames.GAIN2_REG
+        setup = 2
+        register_enum = AD7124RegNames.GAIN0_REG + setup
         new_value = 0x123456
-        self.ad7124.set_setup_gain(register_enum, new_value)
+        self.ad7124.set_setup_gain(setup, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
         # Gain 6, 0xbeef00
-        register_enum = AD7124RegNames.GAIN6_REG
+        setup = 6
+        register_enum = AD7124RegNames.GAIN0_REG + setup
         new_value = 0xBEEF00
-        self.ad7124.set_setup_gain(register_enum, new_value)
+        self.ad7124.set_setup_gain(setup, new_value)
         value = self.ad7124.read_register(register_enum)
         self.assertEqual(new_value, value)
 

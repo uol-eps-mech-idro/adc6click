@@ -191,11 +191,10 @@ class AD7124Driver:
                     break
         return (channel_number, int_value)
 
-    def set_channel(self, register_enum, enable, setup, ainp, ainm):
-        """ Sets the given channel register using the given values.
+    def set_channel(self, channel, enable, setup, ainp, ainm):
+        """ Sets the given channel using the given values.
         Args:
-            register_enum: The register to set,
-                e.g. AD7124RegNames.CH0_MAP_REG.
+            channel: The channel to set, 0 to 15.
             enable: True to enable the channel.
             setup: Number of the setup to use.
             ainp: Positive input to use.
@@ -218,11 +217,22 @@ class AD7124Driver:
         value |= ainm & 0x1F
         # print("set_channel_register value:", hex(value))
         # Write to the register
-        self.write_register(register_enum, value)
+        if 0 <= channel <= 15:
+            register_enum = AD7124RegNames.CH0_MAP_REG + channel
+            self.write_register(register_enum, value)
+        else:
+            raise ValueError("Channel must be in range 0-15")
+
+    def _write_setup(self, setup, value):
+        if 0 <= setup <= 7:
+            register_enum = AD7124RegNames.CFG0_REG + setup
+            self.write_register(register_enum, value)
+        else:
+            raise ValueError("setup must be in range 0-7")
 
     def set_setup_config(
         self,
-        register_enum,
+        setup,
         bipolar=True,
         burnout=0,
         ref_buf_p=False,
@@ -252,11 +262,11 @@ class AD7124Driver:
         value |= (ref_sel & 0x03) << 3
         value |= pga & 0x07
         # print("set_config_register value:", hex(value))
-        self.write_register(register_enum, value)
+        self._write_setup(setup, value)
 
     def set_setup_filter(
         self,
-        register_enum,
+        setup,
         filter_type=0,
         rej60=False,
         post_filter=6,
@@ -277,9 +287,9 @@ class AD7124Driver:
             value |= 0x010000
         value |= output_data_rate & 0x7FF
         # print("set_filter_register value:", hex(value))
-        self.write_register(register_enum, value)
+        self._write_setup(setup, value)
 
-    def set_setup_offset(self, register_enum, new_offset):
+    def set_setup_offset(self, setup, new_offset):
         """ Sets the offset register for the setup.
         See datasheet for description of what the parameters do.
         """
@@ -287,9 +297,9 @@ class AD7124Driver:
         value = 0
         value |= new_offset & 0xFFFFFF
         # print("set_setup_offset value:", hex(value))
-        self.write_register(register_enum, value)
+        self._write_setup(setup, value)
 
-    def set_setup_gain(self, register_enum, new_gain):
+    def set_setup_gain(self, setup, new_gain):
         """ Sets the gain register for the setup.
         See datasheet for description of what the parameters do.
         """
@@ -297,7 +307,7 @@ class AD7124Driver:
         value = 0
         value |= new_gain & 0xFFFFFF
         # print("set_gain_register value:", hex(value))
-        self.write_register(register_enum, value)
+        self._write_setup(setup, value)
 
     def set_adc_control(
         self,
