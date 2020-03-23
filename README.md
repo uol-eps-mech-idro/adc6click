@@ -67,11 +67,11 @@ NOTE: To get the full documentation, you need to have PiGPIO installed so you ne
 
 * Complete voltmeter.py and test.
 * Full Python documentation.
-  * Redo voltage conversion function from first principles.
-  * Put code onto Raspberry Pi to generate all documentation and commit it.
+* Put code onto Raspberry Pi to generate all documentation and commit it.
 
 ### Completed
 
+* Redo voltage conversion function from first principles.
 * Implemented top level application.
 * Implemented unit tests.
 * Work out what the values from the data register mean and how to make them into something sensible.
