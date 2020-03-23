@@ -74,14 +74,14 @@ class AD7124Registers:
         self._registers = [
             # Initial value, Size, Access Type,  Address
             (0x00, 1, 2),  # 0x00,
-            (0x0000, 2, 1),  # 0x00,
-            (0x0000, 3, 2),  # 0x01,
-            (0x0000, 3, 1),  # 0x02,
-            (0x0000, 2, 1),  # 0x03,
-            (0x02, 1, 2),  # 0x04,
-            (0x0000, 3, 2),  # 0x05,
-            (0x0040, 3, 1),  # 0x06,
-            (0x00, 1, 2),  # 0x07,
+            (0x0000, 2, 1),  # 0x01,
+            (0x0000, 3, 2),  # 0x02,
+            (0x0000, 3, 1),  # 0x03,
+            (0x0000, 2, 1),  # 0x04,
+            (0x02, 1, 2),  # 0x05,
+            (0x0000, 3, 2),  # 0x06,
+            (0x0040, 3, 1),  # 0x07,
+            (0x00, 1, 2),  # 0x08,
             (0x8001, 2, 1),  # 0x09,
             (0x0001, 2, 1),  # 0x0A,
             (0x0001, 2, 1),  # 0x0B,
@@ -162,4 +162,3 @@ class AD7124Registers:
         """
         # print("registers.size:", register_enum)
         return self._registers[register_enum.value][1]
-

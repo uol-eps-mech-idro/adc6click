@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.5" />
+<title>adc6click.ad7124.ad7124registers API documentation</title>
+<meta name="description" content="Classes that define the registers used by the AD7124." />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>adc6click.ad7124.ad7124registers</code></h1>
+</header>
+<section id="section-intro">
+<p>Classes that define the registers used by the AD7124.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Classes that define the registers used by the AD7124.
+&#34;&#34;&#34;
+
+from enum import IntEnum
+
+
+class AD7124RegNames(IntEnum):
+    &#34;&#34;&#34; List of all register names.
+
+    IntEnum is used so that basic maths can be done on the enums.
+    &#34;&#34;&#34;
+
+    COMM_REG = 0x00
+    STATUS_REG = 0x00
+    ADC_CTRL_REG = 0x01
+    DATA_REG = 0x02
+    IO_CTRL1_REG = 0x03
+    IO_CTRL2_REG = 0x04
+    ID_REG = 0x05
+    ERR_REG = 0x06
+    ERREN_REG = 0x07
+    CH0_MAP_REG = 0x09
+    CH1_MAP_REG = 0x0A
+    CH2_MAP_REG = 0x0B
+    CH3_MAP_REG = 0x0C
+    CH4_MAP_REG = 0x0D
+    CH5_MAP_REG = 0x0E
+    CH6_MAP_REG = 0x0F
+    CH7_MAP_REG = 0x10
+    CH8_MAP_REG = 0x11
+    CH9_MAP_REG = 0x12
+    CH10_MAP_REG = 0x13
+    CH11_MAP_REG = 0x14
+    CH12_MAP_REG = 0x15
+    CH13_MAP_REG = 0x16
+    CH14_MAP_REG = 0x17
+    CH15_MAP_REG = 0x18
+    CFG0_REG = 0x19
+    CFG1_REG = 0x1A
+    CFG2_REG = 0x1B
+    CFG3_REG = 0x1C
+    CFG4_REG = 0x1D
+    CFG5_REG = 0x1E
+    CFG6_REG = 0x1F
+    CFG7_REG = 0x20
+    FILT0_REG = 0x21
+    FILT1_REG = 0x22
+    FILT2_REG = 0x23
+    FILT3_REG = 0x24
+    FILT4_REG = 0x25
+    FILT5_REG = 0x26
+    FILT6_REG = 0x27
+    FILT7_REG = 0x28
+    OFFS0_REG = 0x29
+    OFFS1_REG = 0x2A
+    OFFS2_REG = 0x2B
+    OFFS3_REG = 0x2C
+    OFFS4_REG = 0x2D
+    OFFS5_REG = 0x2E
+    OFFS6_REG = 0x2F
+    OFFS7_REG = 0x30
+    GAIN0_REG = 0x31
+    GAIN1_REG = 0x32
+    GAIN2_REG = 0x33
+    GAIN3_REG = 0x34
+    GAIN4_REG = 0x35
+    GAIN5_REG = 0x36
+    GAIN6_REG = 0x37
+    GAIN7_REG = 0x38
+
+
+class AD7124Registers:
+    def __init__(self):
+        self._registers = [
+            # Initial value, Size, Access Type,  Address
+            (0x00, 1, 2),  # 0x00,
+            (0x0000, 2, 1),  # 0x00,
+            (0x0000, 3, 2),  # 0x01,
+            (0x0000, 3, 1),  # 0x02,
+            (0x0000, 2, 1),  # 0x03,
+            (0x02, 1, 2),  # 0x04,
+            (0x0000, 3, 2),  # 0x05,
+            (0x0040, 3, 1),  # 0x06,
+            (0x00, 1, 2),  # 0x07,
+            (0x8001, 2, 1),  # 0x09,
+            (0x0001, 2, 1),  # 0x0A,
+            (0x0001, 2, 1),  # 0x0B,
+            (0x0001, 2, 1),  # 0x0C,
+            (0x0001, 2, 1),  # 0x0D,
+            (0x0001, 2, 1),  # 0x0E,
+            (0x0001, 2, 1),  # 0x0F,
+            (0x0001, 2, 1),  # 0x10,
+            (0x0001, 2, 1),  # 0x11,
+            (0x0001, 2, 1),  # 0x12,
+            (0x0001, 2, 1),  # 0x13,
+            (0x0001, 2, 1),  # 0x14,
+            (0x0001, 2, 1),  # 0x15,
+            (0x0001, 2, 1),  # 0x16,
+            (0x0001, 2, 1),  # 0x17,
+            (0x0001, 2, 1),  # 0x18,
+            (0x0860, 2, 1),  # 0x19,
+            (0x0860, 2, 1),  # 0x1A,
+            (0x0860, 2, 1),  # 0x1B,
+            (0x0860, 2, 1),  # 0x1C,
+            (0x0860, 2, 1),  # 0x1D,
+            (0x0860, 2, 1),  # 0x1E,
+            (0x0860, 2, 1),  # 0x1F,
+            (0x0860, 2, 1),  # 0x20,
+            (0x060180, 3, 1),  # 0x21,
+            (0x060180, 3, 1),  # 0x22,
+            (0x060180, 3, 1),  # 0x23,
+            (0x060180, 3, 1),  # 0x24,
+            (0x060180, 3, 1),  # 0x25,
+            (0x060180, 3, 1),  # 0x26,
+            (0x060180, 3, 1),  # 0x27,
+            (0x060180, 3, 1),  # 0x28,
+            (0x800000, 3, 1),  # 0x29,
+            (0x800000, 3, 1),  # 0x2A,
+            (0x800000, 3, 1),  # 0x2B,
+            (0x800000, 3, 1),  # 0x2C,
+            (0x800000, 3, 1),  # 0x2D,
+            (0x800000, 3, 1),  # 0x2E,
+            (0x800000, 3, 1),  # 0x2F,
+            (0x800000, 3, 1),  # 0x30,
+            (0x500000, 3, 1),  # 0x31,
+            (0x500000, 3, 1),  # 0x32,
+            (0x500000, 3, 1),  # 0x33,
+            (0x500000, 3, 1),  # 0x34,
+            (0x500000, 3, 1),  # 0x35,
+            (0x500000, 3, 1),  # 0x36,
+            (0x500000, 3, 1),  # 0x37,
+            (0x500000, 3, 1),  # 0x38,
+        ]
+
+    # Getters
+    def access(self, register_enum):
+        &#34;&#34;&#34; Returns access type for the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            1 is write, 2 is read.
+        &#34;&#34;&#34;
+        # print(&#34;registers.access:&#34;, register_enum)
+        return self._registers[register_enum.value][2]
+
+    def initial(self, register_enum):
+        &#34;&#34;&#34; Returns initial value of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The initial value of the register.
+        &#34;&#34;&#34;
+        # print(&#34;registers.initial:&#34;, register_enum)
+        return self._registers[register_enum.value][0]
+
+    def size(self, register_enum):
+        &#34;&#34;&#34; Returns the size of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The number of bytes in the register.
+        &#34;&#34;&#34;
+        # print(&#34;registers.size:&#34;, register_enum)
+        return self._registers[register_enum.value][1]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames"><code class="flex name class">
+<span>class <span class="ident">AD7124RegNames</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>List of all register names.</p>
+<p>IntEnum is used so that basic maths can be done on the enums.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AD7124RegNames(IntEnum):
+    &#34;&#34;&#34; List of all register names.
+
+    IntEnum is used so that basic maths can be done on the enums.
+    &#34;&#34;&#34;
+
+    COMM_REG = 0x00
+    STATUS_REG = 0x00
+    ADC_CTRL_REG = 0x01
+    DATA_REG = 0x02
+    IO_CTRL1_REG = 0x03
+    IO_CTRL2_REG = 0x04
+    ID_REG = 0x05
+    ERR_REG = 0x06
+    ERREN_REG = 0x07
+    CH0_MAP_REG = 0x09
+    CH1_MAP_REG = 0x0A
+    CH2_MAP_REG = 0x0B
+    CH3_MAP_REG = 0x0C
+    CH4_MAP_REG = 0x0D
+    CH5_MAP_REG = 0x0E
+    CH6_MAP_REG = 0x0F
+    CH7_MAP_REG = 0x10
+    CH8_MAP_REG = 0x11
+    CH9_MAP_REG = 0x12
+    CH10_MAP_REG = 0x13
+    CH11_MAP_REG = 0x14
+    CH12_MAP_REG = 0x15
+    CH13_MAP_REG = 0x16
+    CH14_MAP_REG = 0x17
+    CH15_MAP_REG = 0x18
+    CFG0_REG = 0x19
+    CFG1_REG = 0x1A
+    CFG2_REG = 0x1B
+    CFG3_REG = 0x1C
+    CFG4_REG = 0x1D
+    CFG5_REG = 0x1E
+    CFG6_REG = 0x1F
+    CFG7_REG = 0x20
+    FILT0_REG = 0x21
+    FILT1_REG = 0x22
+    FILT2_REG = 0x23
+    FILT3_REG = 0x24
+    FILT4_REG = 0x25
+    FILT5_REG = 0x26
+    FILT6_REG = 0x27
+    FILT7_REG = 0x28
+    OFFS0_REG = 0x29
+    OFFS1_REG = 0x2A
+    OFFS2_REG = 0x2B
+    OFFS3_REG = 0x2C
+    OFFS4_REG = 0x2D
+    OFFS5_REG = 0x2E
+    OFFS6_REG = 0x2F
+    OFFS7_REG = 0x30
+    GAIN0_REG = 0x31
+    GAIN1_REG = 0x32
+    GAIN2_REG = 0x33
+    GAIN3_REG = 0x34
+    GAIN4_REG = 0x35
+    GAIN5_REG = 0x36
+    GAIN6_REG = 0x37
+    GAIN7_REG = 0x38</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.IntEnum</li>
+<li>builtins.int</li>
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.ADC_CTRL_REG"><code class="name">var <span class="ident">ADC_CTRL_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG0_REG"><code class="name">var <span class="ident">CFG0_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG1_REG"><code class="name">var <span class="ident">CFG1_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG2_REG"><code class="name">var <span class="ident">CFG2_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG3_REG"><code class="name">var <span class="ident">CFG3_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG4_REG"><code class="name">var <span class="ident">CFG4_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG5_REG"><code class="name">var <span class="ident">CFG5_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG6_REG"><code class="name">var <span class="ident">CFG6_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG7_REG"><code class="name">var <span class="ident">CFG7_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH0_MAP_REG"><code class="name">var <span class="ident">CH0_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH10_MAP_REG"><code class="name">var <span class="ident">CH10_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH11_MAP_REG"><code class="name">var <span class="ident">CH11_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH12_MAP_REG"><code class="name">var <span class="ident">CH12_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH13_MAP_REG"><code class="name">var <span class="ident">CH13_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH14_MAP_REG"><code class="name">var <span class="ident">CH14_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH15_MAP_REG"><code class="name">var <span class="ident">CH15_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH1_MAP_REG"><code class="name">var <span class="ident">CH1_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH2_MAP_REG"><code class="name">var <span class="ident">CH2_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH3_MAP_REG"><code class="name">var <span class="ident">CH3_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH4_MAP_REG"><code class="name">var <span class="ident">CH4_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH5_MAP_REG"><code class="name">var <span class="ident">CH5_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH6_MAP_REG"><code class="name">var <span class="ident">CH6_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH7_MAP_REG"><code class="name">var <span class="ident">CH7_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH8_MAP_REG"><code class="name">var <span class="ident">CH8_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.CH9_MAP_REG"><code class="name">var <span class="ident">CH9_MAP_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.COMM_REG"><code class="name">var <span class="ident">COMM_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.DATA_REG"><code class="name">var <span class="ident">DATA_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.ERREN_REG"><code class="name">var <span class="ident">ERREN_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.ERR_REG"><code class="name">var <span class="ident">ERR_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT0_REG"><code class="name">var <span class="ident">FILT0_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT1_REG"><code class="name">var <span class="ident">FILT1_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT2_REG"><code class="name">var <span class="ident">FILT2_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT3_REG"><code class="name">var <span class="ident">FILT3_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT4_REG"><code class="name">var <span class="ident">FILT4_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT5_REG"><code class="name">var <span class="ident">FILT5_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT6_REG"><code class="name">var <span class="ident">FILT6_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT7_REG"><code class="name">var <span class="ident">FILT7_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN0_REG"><code class="name">var <span class="ident">GAIN0_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN1_REG"><code class="name">var <span class="ident">GAIN1_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN2_REG"><code class="name">var <span class="ident">GAIN2_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN3_REG"><code class="name">var <span class="ident">GAIN3_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN4_REG"><code class="name">var <span class="ident">GAIN4_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN5_REG"><code class="name">var <span class="ident">GAIN5_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN6_REG"><code class="name">var <span class="ident">GAIN6_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN7_REG"><code class="name">var <span class="ident">GAIN7_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.ID_REG"><code class="name">var <span class="ident">ID_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL1_REG"><code class="name">var <span class="ident">IO_CTRL1_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL2_REG"><code class="name">var <span class="ident">IO_CTRL2_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS0_REG"><code class="name">var <span class="ident">OFFS0_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS1_REG"><code class="name">var <span class="ident">OFFS1_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS2_REG"><code class="name">var <span class="ident">OFFS2_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS3_REG"><code class="name">var <span class="ident">OFFS3_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS4_REG"><code class="name">var <span class="ident">OFFS4_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS5_REG"><code class="name">var <span class="ident">OFFS5_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS6_REG"><code class="name">var <span class="ident">OFFS6_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS7_REG"><code class="name">var <span class="ident">OFFS7_REG</span></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+</dl>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124Registers"><code class="flex name class">
+<span>class <span class="ident">AD7124Registers</span></span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AD7124Registers:
+    def __init__(self):
+        self._registers = [
+            # Initial value, Size, Access Type,  Address
+            (0x00, 1, 2),  # 0x00,
+            (0x0000, 2, 1),  # 0x00,
+            (0x0000, 3, 2),  # 0x01,
+            (0x0000, 3, 1),  # 0x02,
+            (0x0000, 2, 1),  # 0x03,
+            (0x02, 1, 2),  # 0x04,
+            (0x0000, 3, 2),  # 0x05,
+            (0x0040, 3, 1),  # 0x06,
+            (0x00, 1, 2),  # 0x07,
+            (0x8001, 2, 1),  # 0x09,
+            (0x0001, 2, 1),  # 0x0A,
+            (0x0001, 2, 1),  # 0x0B,
+            (0x0001, 2, 1),  # 0x0C,
+            (0x0001, 2, 1),  # 0x0D,
+            (0x0001, 2, 1),  # 0x0E,
+            (0x0001, 2, 1),  # 0x0F,
+            (0x0001, 2, 1),  # 0x10,
+            (0x0001, 2, 1),  # 0x11,
+            (0x0001, 2, 1),  # 0x12,
+            (0x0001, 2, 1),  # 0x13,
+            (0x0001, 2, 1),  # 0x14,
+            (0x0001, 2, 1),  # 0x15,
+            (0x0001, 2, 1),  # 0x16,
+            (0x0001, 2, 1),  # 0x17,
+            (0x0001, 2, 1),  # 0x18,
+            (0x0860, 2, 1),  # 0x19,
+            (0x0860, 2, 1),  # 0x1A,
+            (0x0860, 2, 1),  # 0x1B,
+            (0x0860, 2, 1),  # 0x1C,
+            (0x0860, 2, 1),  # 0x1D,
+            (0x0860, 2, 1),  # 0x1E,
+            (0x0860, 2, 1),  # 0x1F,
+            (0x0860, 2, 1),  # 0x20,
+            (0x060180, 3, 1),  # 0x21,
+            (0x060180, 3, 1),  # 0x22,
+            (0x060180, 3, 1),  # 0x23,
+            (0x060180, 3, 1),  # 0x24,
+            (0x060180, 3, 1),  # 0x25,
+            (0x060180, 3, 1),  # 0x26,
+            (0x060180, 3, 1),  # 0x27,
+            (0x060180, 3, 1),  # 0x28,
+            (0x800000, 3, 1),  # 0x29,
+            (0x800000, 3, 1),  # 0x2A,
+            (0x800000, 3, 1),  # 0x2B,
+            (0x800000, 3, 1),  # 0x2C,
+            (0x800000, 3, 1),  # 0x2D,
+            (0x800000, 3, 1),  # 0x2E,
+            (0x800000, 3, 1),  # 0x2F,
+            (0x800000, 3, 1),  # 0x30,
+            (0x500000, 3, 1),  # 0x31,
+            (0x500000, 3, 1),  # 0x32,
+            (0x500000, 3, 1),  # 0x33,
+            (0x500000, 3, 1),  # 0x34,
+            (0x500000, 3, 1),  # 0x35,
+            (0x500000, 3, 1),  # 0x36,
+            (0x500000, 3, 1),  # 0x37,
+            (0x500000, 3, 1),  # 0x38,
+        ]
+
+    # Getters
+    def access(self, register_enum):
+        &#34;&#34;&#34; Returns access type for the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            1 is write, 2 is read.
+        &#34;&#34;&#34;
+        # print(&#34;registers.access:&#34;, register_enum)
+        return self._registers[register_enum.value][2]
+
+    def initial(self, register_enum):
+        &#34;&#34;&#34; Returns initial value of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The initial value of the register.
+        &#34;&#34;&#34;
+        # print(&#34;registers.initial:&#34;, register_enum)
+        return self._registers[register_enum.value][0]
+
+    def size(self, register_enum):
+        &#34;&#34;&#34; Returns the size of the given register.
+        Args:
+            register_enum: The register to look up.
+        Returns:
+            The number of bytes in the register.
+        &#34;&#34;&#34;
+        # print(&#34;registers.size:&#34;, register_enum)
+        return self._registers[register_enum.value][1]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="adc6click.ad7124.ad7124registers.AD7124Registers.access"><code class="name flex">
+<span>def <span class="ident">access</span></span>(<span>self, register_enum)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns access type for the given register.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>register_enum</code></strong></dt>
+<dd>The register to look up.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>1 is write, 2 is read.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def access(self, register_enum):
+    &#34;&#34;&#34; Returns access type for the given register.
+    Args:
+        register_enum: The register to look up.
+    Returns:
+        1 is write, 2 is read.
+    &#34;&#34;&#34;
+    # print(&#34;registers.access:&#34;, register_enum)
+    return self._registers[register_enum.value][2]</code></pre>
+</details>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124Registers.initial"><code class="name flex">
+<span>def <span class="ident">initial</span></span>(<span>self, register_enum)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns initial value of the given register.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>register_enum</code></strong></dt>
+<dd>The register to look up.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The initial value of the register.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initial(self, register_enum):
+    &#34;&#34;&#34; Returns initial value of the given register.
+    Args:
+        register_enum: The register to look up.
+    Returns:
+        The initial value of the register.
+    &#34;&#34;&#34;
+    # print(&#34;registers.initial:&#34;, register_enum)
+    return self._registers[register_enum.value][0]</code></pre>
+</details>
+</dd>
+<dt id="adc6click.ad7124.ad7124registers.AD7124Registers.size"><code class="name flex">
+<span>def <span class="ident">size</span></span>(<span>self, register_enum)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the size of the given register.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>register_enum</code></strong></dt>
+<dd>The register to look up.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The number of bytes in the register.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def size(self, register_enum):
+    &#34;&#34;&#34; Returns the size of the given register.
+    Args:
+        register_enum: The register to look up.
+    Returns:
+        The number of bytes in the register.
+    &#34;&#34;&#34;
+    # print(&#34;registers.size:&#34;, register_enum)
+    return self._registers[register_enum.value][1]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="adc6click.ad7124" href="index.html">adc6click.ad7124</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames" href="#adc6click.ad7124.ad7124registers.AD7124RegNames">AD7124RegNames</a></code></h4>
+<ul class="two-column">
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.ADC_CTRL_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.ADC_CTRL_REG">ADC_CTRL_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG0_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG0_REG">CFG0_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG1_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG1_REG">CFG1_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG2_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG2_REG">CFG2_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG3_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG3_REG">CFG3_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG4_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG4_REG">CFG4_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG5_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG5_REG">CFG5_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG6_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG6_REG">CFG6_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CFG7_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CFG7_REG">CFG7_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH0_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH0_MAP_REG">CH0_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH10_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH10_MAP_REG">CH10_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH11_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH11_MAP_REG">CH11_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH12_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH12_MAP_REG">CH12_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH13_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH13_MAP_REG">CH13_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH14_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH14_MAP_REG">CH14_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH15_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH15_MAP_REG">CH15_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH1_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH1_MAP_REG">CH1_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH2_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH2_MAP_REG">CH2_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH3_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH3_MAP_REG">CH3_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH4_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH4_MAP_REG">CH4_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH5_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH5_MAP_REG">CH5_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH6_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH6_MAP_REG">CH6_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH7_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH7_MAP_REG">CH7_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH8_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH8_MAP_REG">CH8_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.CH9_MAP_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.CH9_MAP_REG">CH9_MAP_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.COMM_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.COMM_REG">COMM_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.DATA_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.DATA_REG">DATA_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.ERREN_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.ERREN_REG">ERREN_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.ERR_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.ERR_REG">ERR_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT0_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT0_REG">FILT0_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT1_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT1_REG">FILT1_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT2_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT2_REG">FILT2_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT3_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT3_REG">FILT3_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT4_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT4_REG">FILT4_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT5_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT5_REG">FILT5_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT6_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT6_REG">FILT6_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.FILT7_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.FILT7_REG">FILT7_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN0_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN0_REG">GAIN0_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN1_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN1_REG">GAIN1_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN2_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN2_REG">GAIN2_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN3_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN3_REG">GAIN3_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN4_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN4_REG">GAIN4_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN5_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN5_REG">GAIN5_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN6_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN6_REG">GAIN6_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN7_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.GAIN7_REG">GAIN7_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.ID_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.ID_REG">ID_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL1_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL1_REG">IO_CTRL1_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL2_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.IO_CTRL2_REG">IO_CTRL2_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS0_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS0_REG">OFFS0_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS1_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS1_REG">OFFS1_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS2_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS2_REG">OFFS2_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS3_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS3_REG">OFFS3_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS4_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS4_REG">OFFS4_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS5_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS5_REG">OFFS5_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS6_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS6_REG">OFFS6_REG</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS7_REG" href="#adc6click.ad7124.ad7124registers.AD7124RegNames.OFFS7_REG">OFFS7_REG</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="adc6click.ad7124.ad7124registers.AD7124Registers" href="#adc6click.ad7124.ad7124registers.AD7124Registers">AD7124Registers</a></code></h4>
+<ul class="">
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124Registers.access" href="#adc6click.ad7124.ad7124registers.AD7124Registers.access">access</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124Registers.initial" href="#adc6click.ad7124.ad7124registers.AD7124Registers.initial">initial</a></code></li>
+<li><code><a title="adc6click.ad7124.ad7124registers.AD7124Registers.size" href="#adc6click.ad7124.ad7124registers.AD7124Registers.size">size</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

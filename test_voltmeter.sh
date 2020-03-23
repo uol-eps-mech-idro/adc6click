@@ -5,4 +5,4 @@ then
     sudo pigpiod
 fi
 
-python3 -m unittest -v test_voltmeter
+python3 -m unittest -v test.test_voltmeter
