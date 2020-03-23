@@ -3,8 +3,8 @@
 
 import time
 import unittest
-from ad7124driver import AD7124Driver
-from ad7124registers import AD7124RegNames
+from ad7124.ad7124driver import AD7124Driver
+from ad7124.ad7124registers import AD7124RegNames
 
 
 class TestAD7214Driver(unittest.TestCase):

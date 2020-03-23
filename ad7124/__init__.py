@@ -1,1 +1,2 @@
-from .ad7124driver import AD7124Driver
+""" The AD7124 driver. """
+

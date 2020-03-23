@@ -3,7 +3,7 @@
 import time
 import unittest
 
-from ad7124spi import AD7124SPI
+from ad7124.ad7124spi import AD7124SPI
 
 
 class TestAD7214Spi(unittest.TestCase):
