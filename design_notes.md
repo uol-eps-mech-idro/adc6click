@@ -44,11 +44,15 @@ register.
 
 ## Development
 
-I started out trying to use the spidev Python package but it is poorly
-documented and does not do what I expected it to do.  So I tried the Analog
-Devices C driver example.
+One thing you will notice as you look through the code is numerous commented
+out print statements.  These were used during development and have been
+intentionally left in the code in case they are needed again.
 
 ### Analog Devices Source Code
+
+I started out trying to use the spidev Python package but it is poorly
+documented and does not do what I expected it to do.  So I started with the
+Analog Devices C driver example.
 
 https://wiki.analog.com/resources/tools-software/uc-drivers/ad7124
 
@@ -88,11 +92,18 @@ correctly so I had to re-write that.
 
 There were several problems that delayed development.
 
-One of the key problems was the lack of a circuit diagram for the ADC when used in split power supply mode.  This caused a lot of time to be spent working out what did work and what didn't.  This took a lot of time sort out.
+One of the key problems was the lack of a circuit diagram for the ADC when used
+in split power supply mode.  This caused a lot of time to be spent working out
+what did work and what didn't.
 
-Another was strange behaviour when reading voltages when the internal voltage reference was not set up correctly.
+Another was strange behaviour (as the input voltage was increased, values
+started going up then went down) when the internal voltage reference was not
+set up correctly.  This was found to be a hardware problem.
 
-Another was that the input voltage needed to be related to ADC ground, not just the difference across the analogue input pins. If the voltage was outsidde the input maximum range, clamp diodes inside the ADC protect the device and drastically change the input impedance.
+Another was that the input voltage needed to be related to ADC ground, not
+just the difference across the analogue input pins. If the voltage was
+outside the input maximum range, clamp diodes inside the ADC protect the
+device and drastically change the input impedance.
 
 ## Phase 1
 
