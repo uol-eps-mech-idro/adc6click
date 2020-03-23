@@ -358,12 +358,17 @@ class AD7124Driver:
         """
         voltage = float(int_value)
         if bipolar:
-            voltage = voltage / float(0x7FFFFF)
+            # Subtract 1
+            voltage -= float(1)
+            # Divide by 2^23
+            voltage /= float(0x7FFFFF)
         else:
-            voltage = voltage / float(0xFFFFFF)
-        voltage *= vref
-        voltage /= gain
-        voltage *= scale
+            # Divide by 2^24
+            voltage /= float(0xFFFFFF)
+        voltage *= float(vref)
+        voltage /= float(gain)
+        # Apply scaling factor to compensate for external resistor network.
+        voltage *= float(scale)
         return voltage
 
     def to_temperature(_, int_value):
