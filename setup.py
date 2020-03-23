@@ -18,4 +18,3 @@ setup(name='ad7124',
           'pdoc3',
       ],
       zip_safe=False)
-
