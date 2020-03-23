@@ -5,8 +5,8 @@ the AD7124.
 """
 
 import time
-from ad7124spi import AD7124SPI  # , bytes_to_string
-from ad7124registers import AD7124RegNames, AD7124Registers
+from ad7124.ad7124spi import AD7124SPI  # , bytes_to_string
+from ad7124.ad7124registers import AD7124RegNames, AD7124Registers
 
 
 class AD7124Driver:

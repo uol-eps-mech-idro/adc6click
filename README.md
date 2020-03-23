@@ -49,13 +49,14 @@ the [Google style docstring](http://google.github.io/styleguide/pyguide.html#38-
 If you want to regenerate the documentation for the module, install pdoc using:
 
 ```bash
+sudo apt install python3-pip
 pip3 install pdoc3
 ```
 
 Then run:
 
 ```bash
-pdoc --html .
+~/.local/bin/pdoc3 --html .
 ```
 
 NOTE: To get the full documentation, you need to have PiGPIO installed so you need to do this on a Raspberry Pi.

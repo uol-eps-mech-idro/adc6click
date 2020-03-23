@@ -8,7 +8,7 @@ The PiGPIO daemon must be running before using this script.  Start
 using: `sudo pigpiod`
 """
 
-# import pigpio
+import pigpio
 
 
 def bytes_to_string(data):
