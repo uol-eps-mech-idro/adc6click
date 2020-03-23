@@ -24,18 +24,19 @@ class TestAD7214InternalTemperature(unittest.TestCase):
         Use channel 15 and setup 7.
         """
         # Config 7. Bipolar. Internal reference.
+        adc_setup = 7
+        self._adc.set_setup_config(adc_setup, bipolar=True, ref_sel=0b10)
         register = AD7124RegNames.CFG7_REG
-        self._adc.set_setup_config(register, bipolar=True, ref_sel=0b10)
         value = self._adc.read_register(register)
         self.assertEqual(0x0870, value)
         # Configuration Filter Register. Use defaults.
+        value = self._adc.read_register(adc_setup)
         register = AD7124RegNames.FILT7_REG
-        value = self._adc.read_register(register)
         self.assertEqual(0x060180, value)
         # Channel Register
-        register = AD7124RegNames.CH15_MAP_REG
+        adc_channel = 15
         self._adc.set_channel(
-            register,
+            adc_channel,
             # Enable using setup 7.
             enable=True,
             setup=7,
@@ -43,6 +44,7 @@ class TestAD7214InternalTemperature(unittest.TestCase):
             ainp=0b10000,
             ainm=0b10000,
         )
+        register = AD7124RegNames.CH15_MAP_REG
         value = self._adc.read_register(register)
         expected = 0
         expected |= 0x8000  # Enable

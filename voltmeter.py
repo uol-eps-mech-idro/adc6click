@@ -33,19 +33,15 @@ class VoltmeterChannel:
         Values are hard coded so only channel 1 and 2 are supported.
         """
         if self.number == 1:
-            config_reg = AD7124RegNames.CFG1_REG
-            filter_reg = AD7124RegNames.FILT1_REG
-            channel_reg = AD7124RegNames.CH1_MAP_REG
-            setup = 1
+            adc_channel = 1
+            adc_setup = 1
             positive_pin = 2
             negative_pin = 3
             self._bipolar = True
             self._scale = 7.5 / self.VREF
         elif self.number == 2:
-            config_reg = AD7124RegNames.CFG2_REG
-            filter_reg = AD7124RegNames.FILT2_REG
-            channel_reg = AD7124RegNames.CH2_MAP_REG
-            setup = 2
+            adc_channel = 2
+            adc_setup = 2
             positive_pin = 4
             negative_pin = 5
             self._bipolar = False
@@ -55,7 +51,7 @@ class VoltmeterChannel:
             exit(-1)
         # Set the registers up
         adc.set_setup_config(
-            config_reg,
+            adc_setup,
             bipolar=self._bipolar,
             ref_buf_p=True,
             ref_buf_m=True,
@@ -66,15 +62,15 @@ class VoltmeterChannel:
         )
         # Filters are set up for speed so are less accurate.
         adc.set_setup_filter(
-            filter_reg,
+            adc_setup,
             filter_type=0,  # SINC4
             post_filter=0,  # No post filter.
             output_data_rate=0x200,  # Fastest is 0x001.
         )
         adc.set_channel(
-            channel_reg,
+            adc_channel,
             enable=True,
-            setup=setup,
+            setup=adc_setup,
             ainp=positive_pin,
             ainm=negative_pin,
         )

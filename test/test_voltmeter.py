@@ -43,28 +43,29 @@ class TestAD7214Voltmeter(unittest.TestCase):
         """
         self._driver.reset()
         print("Using channel 0, setup 0")
-        # Config 0
-        register = AD7124RegNames.CFG0_REG
+        # Setup config 0
+        setup = 0
         self._driver.set_setup_config(
-            register,
+            setup,
             bipolar=self.BIPOLAR,  # _ADC6_CONFIG_ENABLE_BIPOLAR_OP
             ain_buf_p=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINP
             ain_buf_m=True,  # _ADC6_CONFIG_ENABLE_BUFFER_ON_AINM
         )
+        register = AD7124RegNames.CFG0_REG
         value = self._driver.read_register(register)
         if self.BIPOLAR:
             self.assertEqual(0x0860, value)
         else:
             self.assertEqual(0x0060, value)
         # Configuration Filter Register
-        register = AD7124RegNames.FILT0_REG
         self._driver.set_setup_filter(
-            register,
+            setup,
             filter_type=0,  # SINC4
             # post_filter=0,  # No post filter.
             post_filter=3,  # Default
             output_data_rate=0x180,  # Fastest is 0x001.
         )
+        register = AD7124RegNames.FILT0_REG
         value = self._driver.read_register(register)
         # self.assertEqual(0x000180, value)
         self.assertEqual(0x060180, value)
@@ -80,14 +81,15 @@ class TestAD7214Voltmeter(unittest.TestCase):
             ainp = 4
             ainm = 5
             expected = 0x8085
-        register = AD7124RegNames.CH0_MAP_REG
+        channel = 0
         self._driver.set_channel(
-            register,
+            channel,
             enable=True,  # 15 _ADC6_CONTROL_DATA_STATUS_ENABLE
             setup=0,  # Setup 0.
             ainp=ainp,
             ainm=ainm,
         )
+        register = AD7124RegNames.CH0_MAP_REG
         value = self._driver.read_register(register)
         self.assertEqual(expected, value)
         # Verify that all channels are disabled.
