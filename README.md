@@ -5,6 +5,7 @@ board that uses the AD7214-8 24 bit ADC on a Raspberry Pi.
 
 ## Installation
 
+Connect a monitor, keyboard and mouse to the Raspberry Pi 4.  Ensure that the
 Install the code by downloading or cloning this repo onto the Raspberry Pi.  Then install the dependencies using the following commands:
 
 ```bash
@@ -32,14 +33,14 @@ In same directory as this file we have:
 The subdirectories contain:
 
 * `ad7124` The driver code.
-  * `ad7124driver.py` The driver API.
-  * `ad7124registers.py` Enums and parameters for all of the ADC registers.
-  * `ad7124spi.py` Wrapper around the PiGPIO SPI functions.
+    * `ad7124driver.py` The driver API.
+    * `ad7124registers.py` Enums and parameters for all of the ADC registers.
+    * `ad7124spi.py` Wrapper around the PiGPIO SPI functions.
 * `arduino-code` Sample application code for the Arduino.  This code was the most useful.
-* `c-code` Sample code from the manufacturer.  Less useful as it did not show how to configure the registers to make the ADC do soemthing useful.
-* `docs` PDFs of the datasheeets used to develop the code.
+* `c-code` Sample code from the manufacturer.  Less useful as it did not show how to configure the registers to make the ADC do something useful.
+* `docs` PDFs of the datasheets used to develop the code.
 * `html` The HTML API documentation for this driver.  Generated using pdoc.
-* `pigpio-test` This directory has some cutdown test programs used when debugging the SPI interface.
+* `pigpio-test` This directory has some cut down test programs used when debugging the SPI interface.
 * `test` The unit test files live in here.  Shell scripts are also provided to run the unit tests.  The unit test files serve two purposes:
   1. Testing the driver and SPI interface functions.
   1. Show the user how the functions under test might be used.
@@ -70,6 +71,7 @@ firefox index.html
 ### To Do
 
 * Complete voltmeter.py and test.
+
 
 ### Completed
 

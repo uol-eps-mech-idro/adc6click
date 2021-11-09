@@ -8,5 +8,12 @@ __pycache__
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
 
+# Test code build output.
 .depend
+c-code/ad7124
 
+# Documentation output
+**/html
+
+# VSCode
+**/.vscode
