@@ -18,7 +18,8 @@ def test_ad7124_read():
     spi_h = pi.spi_open(spi_channel, baud, spi_flags)
     data = b'\x45\x00'
     data_read = pi.spi_xfer(spi_h, data)
-    print("id = 0xff14", data_read[1].hex())
+    print("id should be 0xff14", data_read[1].hex())
+    print("id should be 0xff14", data_read[1].hex())
     # Set channel 15 to read temperature. Use setup 7.
     # FIXME
     data = b'\x01\x04\xC0'
@@ -43,8 +44,8 @@ def test_ad7124_read():
     data = b'\x41\x00\x00'
     data_read = pi.spi_xfer(spi_h, data)
     print("control reg", data_read[1].hex())
-    # Read 100 times
-    for _ in range(0, 10):
+    # Read a few times
+    for _ in range(0, 1):
         data = b'\x42\x00\x00\x00'
         data_read = pi.spi_xfer(spi_h, data)
         print_temperature(data_read[1])
