@@ -6,18 +6,19 @@ for internal use, this code is now  fit for release.
 
 ## Installation
 
-Install the code by downloading or cloning this repo onto the Raspberry Pi, e.g.
+To setup a Raspberry Pi, see the [set up doc](raspberry_pi_setup.md).
+
+Install the code on to the Pi by downloading or cloning this repo like this:
 
 ```bash
-mkdir ~/projects
-cd ~/projects
+cd ~/
 git clone https://github.com/uol-eps-mech-idro/adc6click.git
 ```
 
 Then install the dependencies using the following commands:
 
 ```bash
-cd ~/projects/adc6click
+cd ~/adc6click
 sudo python3 setup.py develop
 ```
 

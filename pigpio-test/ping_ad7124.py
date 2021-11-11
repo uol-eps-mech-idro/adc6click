@@ -2,6 +2,7 @@
 
 """ This file was created so that I could understand how the GPIO pins and
 the SPI bus could be controlled using the pigpio library.
+Asks for the ID of the AD7124.
 """
 
 import time
@@ -13,14 +14,13 @@ def test_ad7124_read():
     baud = 50 * 1000
     spi_channel = 0
     spi_flags = 3
+    time.sleep(0.0001)
     # Open SPI device
     spi_h = pi.spi_open(spi_channel, baud, spi_flags)
-    time.sleep(0.01)
     data = b'\x45\x00'
     data_read = pi.spi_xfer(spi_h, data)
     print("Ask for ID, expect 0x14")
     print("Result: ", data_read)
-    # Tidy up
     pi.spi_close(spi_h)
 
 # Connect to pigpoid
